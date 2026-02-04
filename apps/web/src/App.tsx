@@ -84,6 +84,12 @@ export default function App() {
       },
     );
 
+    socket.on("queue:matched", ({ code }: { code: string }) => {
+      setJoinCode(code);
+      setToast(`매칭 완료: ${code}`);
+      setTimeout(() => setToast(null), 2000);
+    });
+
     socket.on("game:finish", ({ winnerId }: { winnerId: string }) => {
       setWinnerId(winnerId);
       setPhase("result");
@@ -148,6 +154,12 @@ export default function App() {
   function createRoom() {
     socket.emit("room:create", { totalQuestions, grade, subject });
     setPhase("lobby");
+  }
+
+  function quickMatch() {
+    socket.emit("queue:join", { totalQuestions, grade, subject });
+    setToast("매칭 대기중...");
+    setTimeout(() => setToast(null), 2000);
   }
 
   function submitAnswer() {
@@ -218,11 +230,18 @@ export default function App() {
             </div>
           </div>
 
-          <div className="row" style={{ marginTop: 12 }}>
+          <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
             <button className="btn primary" onClick={createRoom}>
               방 만들기
             </button>
+            <button className="btn" onClick={quickMatch}>
+              빠른 매칭
+            </button>
           </div>
+
+          <p className="hint" style={{ marginTop: 10 }}>
+            빠른 매칭: 같은 설정(학년/과목/문제수)으로 대기 중인 상대와 자동으로 방이 생성됩니다.
+          </p>
 
           <div className="row" style={{ marginTop: 12 }}>
             <input

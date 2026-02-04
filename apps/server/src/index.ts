@@ -57,6 +57,22 @@ type Room = {
 const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 4);
 const rooms = new Map<string, Room>();
 
+// Simple matchmaking queue (MVP): pairs players by (grade, subject, totalQuestions)
+// NOTE: no persistence; best-effort cleanup on disconnect.
+const queues = new Map<string, string[]>();
+function queueKey(opts: { grade: Grade; subject: Subject; totalQuestions: number }) {
+  return `${opts.grade}:${opts.subject}:${opts.totalQuestions}`;
+}
+function queueRemove(socketId: string) {
+  for (const [k, arr] of queues) {
+    const idx = arr.indexOf(socketId);
+    if (idx >= 0) {
+      arr.splice(idx, 1);
+      if (arr.length === 0) queues.delete(k);
+    }
+  }
+}
+
 function randomAnonName() {
   const a = ["용감한", "똑똑한", "빠른", "상냥한", "멋진", "집중하는"]; 
   const b = ["고양이", "토끼", "호랑이", "여우", "펭귄", "돌고래"]; 
@@ -144,6 +160,9 @@ io.on("connection", (socket) => {
   const playerId = socket.id;
   const name = randomAnonName();
 
+  // Make sure this socket isn't lingering in a queue (defensive)
+  queueRemove(socket.id);
+
   socket.on(
     "room:create",
     (
@@ -153,6 +172,9 @@ io.on("connection", (socket) => {
         subject,
       }: { totalQuestions?: number; grade?: Grade; subject?: Subject } = {},
     ) => {
+      // Leaving matchmaking queue if any
+      queueRemove(socket.id);
+
       const room = getOrCreateRoom();
       room.totalQuestions = totalQuestions ?? room.totalQuestions;
       room.grade = grade ?? room.grade;
@@ -173,6 +195,9 @@ io.on("connection", (socket) => {
   );
 
   socket.on("room:join", ({ code }: { code: string }) => {
+    // Leaving matchmaking queue if any
+    queueRemove(socket.id);
+
     const room = rooms.get(code);
     if (!room) {
       socket.emit("error:toast", { message: "방 코드를 찾을 수 없어요." });
@@ -193,6 +218,78 @@ io.on("connection", (socket) => {
     };
     socket.join(room.code);
     io.to(room.code).emit("room:state", roomState(room));
+  });
+
+  // Matchmaking (quick play)
+  socket.on(
+    "queue:join",
+    ({ totalQuestions, grade, subject }: { totalQuestions?: number; grade?: Grade; subject?: Subject } = {},
+    ) => {
+      queueRemove(socket.id);
+
+      const g: Grade = grade ?? 1;
+      const s: Subject = subject ?? "math";
+      const t = totalQuestions ?? 10;
+
+      const key = queueKey({ grade: g, subject: s, totalQuestions: t });
+      const arr = queues.get(key) ?? [];
+      if (!queues.has(key)) queues.set(key, arr);
+
+      // Prevent duplicates
+      if (!arr.includes(socket.id)) arr.push(socket.id);
+
+      // Matched!
+      if (arr.length >= 2) {
+        const aId = arr.shift()!;
+        const bId = arr.shift()!;
+        if (arr.length === 0) queues.delete(key);
+
+        const aSock = io.sockets.sockets.get(aId);
+        const bSock = io.sockets.sockets.get(bId);
+        if (!aSock || !bSock) {
+          // best-effort cleanup; requeue the live one
+          if (aSock && !arr.includes(aId)) arr.unshift(aId);
+          if (bSock && !arr.includes(bId)) arr.unshift(bId);
+          queues.set(key, arr);
+          return;
+        }
+
+        const room = getOrCreateRoom();
+        room.totalQuestions = t;
+        room.grade = g;
+        room.subject = s;
+
+        const aName = randomAnonName();
+        const bName = randomAnonName();
+
+        room.players[aId] = {
+          id: aId,
+          name: aName,
+          socketId: aId,
+          ready: false,
+          correct: 0,
+          index: 0,
+        };
+        room.players[bId] = {
+          id: bId,
+          name: bName,
+          socketId: bId,
+          ready: false,
+          correct: 0,
+          index: 0,
+        };
+
+        aSock.join(room.code);
+        bSock.join(room.code);
+
+        io.to(room.code).emit("room:state", roomState(room));
+        io.to(room.code).emit("queue:matched", { code: room.code });
+      }
+    },
+  );
+
+  socket.on("queue:leave", () => {
+    queueRemove(socket.id);
   });
 
   socket.on("player:ready", ({ code, ready }: { code: string; ready: boolean }) => {
@@ -310,6 +407,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    // leave matchmaking queue
+    queueRemove(socket.id);
+
     // remove player from any room
     for (const room of rooms.values()) {
       if (room.players[playerId]) {
