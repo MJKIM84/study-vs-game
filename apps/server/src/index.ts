@@ -3,6 +3,7 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import { customAlphabet } from "nanoid";
+import { QUESTION_BANK } from "./questionBank.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -75,72 +76,29 @@ function pick<T>(rng: () => number, arr: T[]) {
   return arr[Math.floor(rng() * arr.length)];
 }
 
+function shuffleInPlace<T>(rng: () => number, arr: T[]) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 function generateQuestions(opts: { grade: Grade; subject: Subject; total: number; seed: number }): Question[] {
   const rng = mulberry32(opts.seed);
-  const qs: Question[] = [];
 
-  const makeId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
+  const source =
+    opts.subject === "math" ? QUESTION_BANK.math[opts.grade] : QUESTION_BANK.english[opts.grade];
 
-  if (opts.subject === "math") {
-    for (let i = 0; i < opts.total; i++) {
-      if (opts.grade === 1) {
-        const a = Math.floor(rng() * 10) + 1;
-        const b = Math.floor(rng() * 10) + 1;
-        qs.push({ id: makeId(), prompt: `${a} + ${b} = ?`, answer: String(a + b) });
-      } else if (opts.grade === 2) {
-        const a = Math.floor(rng() * 50) + 10;
-        const b = Math.floor(rng() * 50) + 1;
-        const isAdd = rng() > 0.4;
-        if (isAdd) qs.push({ id: makeId(), prompt: `${a} + ${b} = ?`, answer: String(a + b) });
-        else qs.push({ id: makeId(), prompt: `${a} - ${b} = ?`, answer: String(a - b) });
-      } else {
-        const a = Math.floor(rng() * 8) + 2;
-        const b = Math.floor(rng() * 9) + 1;
-        qs.push({ id: makeId(), prompt: `${a} × ${b} = ?`, answer: String(a * b) });
-      }
-    }
-    return qs;
-  }
+  const pool = source.slice();
+  shuffleInPlace(rng, pool);
 
-  // english: Korean meaning -> type English word (lowercase)
-  const vocab: Record<Grade, Array<{ ko: string; en: string }>> = {
-    1: [
-      { ko: "고양이", en: "cat" },
-      { ko: "개", en: "dog" },
-      { ko: "사과", en: "apple" },
-      { ko: "책", en: "book" },
-      { ko: "학교", en: "school" },
-      { ko: "물", en: "water" },
-      { ko: "빨강", en: "red" },
-      { ko: "파랑", en: "blue" },
-    ],
-    2: [
-      { ko: "바나나", en: "banana" },
-      { ko: "친구", en: "friend" },
-      { ko: "가족", en: "family" },
-      { ko: "행복한", en: "happy" },
-      { ko: "작은", en: "small" },
-      { ko: "큰", en: "big" },
-      { ko: "달리다", en: "run" },
-      { ko: "먹다", en: "eat" },
-    ],
-    3: [
-      { ko: "아침", en: "morning" },
-      { ko: "저녁", en: "evening" },
-      { ko: "공원", en: "park" },
-      { ko: "연필", en: "pencil" },
-      { ko: "읽다", en: "read" },
-      { ko: "쓰다", en: "write" },
-      { ko: "공부하다", en: "study" },
-      { ko: "놀다", en: "play" },
-    ],
-  };
-
+  // If total exceeds bank size, wrap (MVP safety)
+  const out: Question[] = [];
   for (let i = 0; i < opts.total; i++) {
-    const w = pick(rng, vocab[opts.grade]);
-    qs.push({ id: makeId(), prompt: `"${w.ko}"를 영어로 쓰세요`, answer: w.en });
+    const q = pool[i % pool.length];
+    out.push({ id: q.id, prompt: q.prompt, answer: q.answer });
   }
-  return qs;
+  return out;
 }
 
 function getOrCreateRoom(code?: string): Room {
