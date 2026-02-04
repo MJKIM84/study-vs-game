@@ -1,0 +1,16 @@
+{
+  "name": "study-vs-game",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@10",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/server & npm run dev -w apps/web",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:server": "npm run dev -w apps/server",
+    "build": "npm run build -w apps/web && npm run build -w apps/server",
+    "lint": "npm run lint -w apps/web && npm run lint -w apps/server"
+  }
+}
