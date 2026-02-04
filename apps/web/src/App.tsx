@@ -26,6 +26,14 @@ type RoomState = {
   startAt: number | null;
 };
 
+type BankMeta = {
+  grade: Grade;
+  subject: Subject;
+  semester: Semester;
+  totalQuestions: number;
+  units: Array<{ unitCode: string; count: number; tags: string[]; semesters: number[] }>;
+};
+
 type Question = { id: string; prompt: string };
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:5174";
@@ -44,6 +52,7 @@ export default function App() {
   const [totalQuestions, setTotalQuestions] = useState<10 | 20>(10);
   const [semester, setSemester] = useState<Semester>("all");
   const [excludeUnitCodesText, setExcludeUnitCodesText] = useState("");
+  const [bankMeta, setBankMeta] = useState<BankMeta | null>(null);
 
   // lobby/game state
   const [ready, setReady] = useState(false);
@@ -115,6 +124,24 @@ export default function App() {
     };
   }, [socket]);
 
+  // Fetch bank meta for exclude-by-checkbox UI
+  useEffect(() => {
+    const ac = new AbortController();
+    const url = new URL(`${SERVER_URL}/bank/meta`);
+    url.searchParams.set("grade", String(grade));
+    url.searchParams.set("subject", subject);
+    url.searchParams.set("semester", String(semester));
+
+    fetch(url.toString(), { signal: ac.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j: BankMeta) => setBankMeta(j))
+      .catch(() => {
+        // ignore abort/errors for MVP
+      });
+
+    return () => ac.abort();
+  }, [grade, subject, semester]);
+
   // overall timer: starts when countdown ends
   useEffect(() => {
     if (!room || phase !== "playing") return;
@@ -161,6 +188,13 @@ export default function App() {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
+  }
+
+  function toggleExclude(unitCode: string) {
+    const set = new Set(parseExcludeUnitCodes());
+    if (set.has(unitCode)) set.delete(unitCode);
+    else set.add(unitCode);
+    setExcludeUnitCodesText([...set].join(","));
   }
 
   function createRoom() {
@@ -269,6 +303,28 @@ export default function App() {
               placeholder="제외 unitCode(쉼표로 구분) 예: M1-1-01,E2-2-01"
             />
           </div>
+
+          {bankMeta && bankMeta.units.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div className="hint">체크해서 제외(unitCode):</div>
+              <div className="row" style={{ marginTop: 6, gap: 8, flexWrap: "wrap" }}>
+                {bankMeta.units.map((u) => {
+                  const checked = parseExcludeUnitCodes().includes(u.unitCode);
+                  return (
+                    <label key={u.unitCode} className="pill" style={{ cursor: "pointer", userSelect: "none" }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleExclude(u.unitCode)}
+                        style={{ marginRight: 6 }}
+                      />
+                      {u.unitCode} ({u.count})
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
             <button className="btn primary" onClick={createRoom}>

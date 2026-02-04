@@ -13,6 +13,37 @@ const app = express();
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+// Bank metadata for UI (unit codes, counts)
+app.get("/bank/meta", (req, res) => {
+  const grade = Number(req.query.grade ?? 1) as 1 | 2 | 3;
+  const subject = (String(req.query.subject ?? "math") as "math" | "english");
+  const semester = (String(req.query.semester ?? "all") as "all" | "1" | "2");
+
+  const src = subject === "math" ? BANK.math[grade] : BANK.english[grade];
+  const filtered =
+    semester === "all" ? src : src.filter((q) => q.semester === Number(semester));
+
+  const byUnit: Record<string, { count: number; tags: string[]; semesters: number[] }> = {};
+  for (const q of filtered) {
+    byUnit[q.unitCode] ??= { count: 0, tags: [], semesters: [] };
+    byUnit[q.unitCode].count += 1;
+    for (const t of q.tags) if (!byUnit[q.unitCode].tags.includes(t)) byUnit[q.unitCode].tags.push(t);
+    if (!byUnit[q.unitCode].semesters.includes(q.semester)) byUnit[q.unitCode].semesters.push(q.semester);
+  }
+
+  const units = Object.entries(byUnit)
+    .map(([unitCode, v]) => ({ unitCode, ...v }))
+    .sort((a, b) => a.unitCode.localeCompare(b.unitCode));
+
+  res.json({
+    grade,
+    subject,
+    semester,
+    totalQuestions: filtered.length,
+    units,
+  });
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: CLIENT_ORIGIN, credentials: true },
