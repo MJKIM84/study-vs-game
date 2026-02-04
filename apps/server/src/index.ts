@@ -3,7 +3,7 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import { customAlphabet } from "nanoid";
-import { QUESTION_BANK } from "./questionBank.js";
+import { QUESTION_BANK, type Semester } from "./questionBank.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -49,6 +49,8 @@ type Room = {
   totalQuestions: number;
   grade: Grade;
   subject: Subject;
+  semester: Semester | "all";
+  excludeUnitCodes: string[];
   seed?: number;
   questions?: Question[];
   startAt?: number;
@@ -99,19 +101,33 @@ function shuffleInPlace<T>(rng: () => number, arr: T[]) {
   }
 }
 
-function generateQuestions(opts: { grade: Grade; subject: Subject; total: number; seed: number }): Question[] {
+function generateQuestions(opts: {
+  grade: Grade;
+  subject: Subject;
+  total: number;
+  seed: number;
+  semester: Semester | "all";
+  excludeUnitCodes: string[];
+}): Question[] {
   const rng = mulberry32(opts.seed);
 
   const source =
     opts.subject === "math" ? QUESTION_BANK.math[opts.grade] : QUESTION_BANK.english[opts.grade];
 
-  const pool = source.slice();
-  shuffleInPlace(rng, pool);
+  const exclude = new Set(opts.excludeUnitCodes ?? []);
+  let pool = source.filter((q) => !exclude.has(q.unitCode));
+  if (opts.semester !== "all") pool = pool.filter((q) => q.semester === opts.semester);
 
-  // If total exceeds bank size, wrap (MVP safety)
+  // Fallback: if filters removed everything, revert to full source
+  if (pool.length === 0) pool = source.slice();
+
+  const shuffled = pool.slice();
+  shuffleInPlace(rng, shuffled);
+
+  // If total exceeds pool size, wrap (MVP safety)
   const out: Question[] = [];
   for (let i = 0; i < opts.total; i++) {
-    const q = pool[i % pool.length];
+    const q = shuffled[i % shuffled.length];
     out.push({ id: q.id, prompt: q.prompt, answer: q.answer });
   }
   return out;
@@ -130,6 +146,8 @@ function getOrCreateRoom(code?: string): Room {
     totalQuestions: 10,
     grade: 1,
     subject: "math",
+    semester: "all",
+    excludeUnitCodes: [],
   };
   rooms.set(newCode, room);
   return room;
@@ -152,6 +170,8 @@ function roomState(room: Room) {
     totalQuestions: room.totalQuestions,
     grade: room.grade,
     subject: room.subject,
+    semester: room.semester,
+    excludeUnitCodes: room.excludeUnitCodes,
     startAt: room.startAt ?? null,
   };
 }
@@ -170,7 +190,15 @@ io.on("connection", (socket) => {
         totalQuestions,
         grade,
         subject,
-      }: { totalQuestions?: number; grade?: Grade; subject?: Subject } = {},
+        semester,
+        excludeUnitCodes,
+      }: {
+        totalQuestions?: number;
+        grade?: Grade;
+        subject?: Subject;
+        semester?: Semester | "all";
+        excludeUnitCodes?: string[];
+      } = {},
     ) => {
       // Leaving matchmaking queue if any
       queueRemove(socket.id);
@@ -179,6 +207,8 @@ io.on("connection", (socket) => {
       room.totalQuestions = totalQuestions ?? room.totalQuestions;
       room.grade = grade ?? room.grade;
       room.subject = subject ?? room.subject;
+      room.semester = semester ?? room.semester;
+      room.excludeUnitCodes = excludeUnitCodes ?? room.excludeUnitCodes;
 
       room.players[playerId] = {
         id: playerId,
@@ -258,6 +288,8 @@ io.on("connection", (socket) => {
         room.totalQuestions = t;
         room.grade = g;
         room.subject = s;
+        room.semester = "all";
+        room.excludeUnitCodes = [];
 
         const aName = randomAnonName();
         const bName = randomAnonName();
@@ -309,6 +341,8 @@ io.on("connection", (socket) => {
         subject: room.subject,
         total: room.totalQuestions,
         seed: room.seed,
+        semester: room.semester,
+        excludeUnitCodes: room.excludeUnitCodes,
       });
       room.startAt = Date.now() + 3000;
 

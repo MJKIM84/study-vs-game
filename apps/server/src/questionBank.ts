@@ -1,10 +1,15 @@
 export type Grade = 1 | 2 | 3;
 export type Subject = "math" | "english";
 
+export type Semester = 1 | 2;
+
 export type BankQuestion = {
   id: string;
   prompt: string;
   answer: string;
+  // unitCode: e.g. M1-1-01 (Math grade1 semester1 unit01)
+  unitCode: string;
+  semester: Semester;
   tags: string[];
 };
 
@@ -38,10 +43,14 @@ function genMath1(): BankQuestion[] {
   let i = 1;
   for (let a = 1; a <= 10 && out.length < 40; a++) {
     for (let b = 1; b <= 10 && out.length < 40; b++) {
+      const sem: Semester = a <= 5 ? 1 : 2;
+      const unit = sem === 1 ? "01" : "02";
       out.push({
         id: `m1-${pad(i++)}`,
         prompt: `${a} + ${b} = ?`,
         answer: String(a + b),
+        semester: sem,
+        unitCode: `M1-${sem}-${unit}`,
         tags: ["add"],
       });
     }
@@ -60,6 +69,8 @@ function genMath2(): BankQuestion[] {
       id: `m2-${pad(i++)}`,
       prompt: `${a} + ${b} = ?`,
       answer: String(a + b),
+      semester: 1,
+      unitCode: "M2-1-01",
       tags: ["add"],
     });
   }
@@ -72,6 +83,8 @@ function genMath2(): BankQuestion[] {
       id: `m2-${pad(i++)}`,
       prompt: `${A} - ${B} = ?`,
       answer: String(A - B),
+      semester: 2,
+      unitCode: "M2-2-01",
       tags: ["sub"],
     });
   }
@@ -89,6 +102,8 @@ function genMath3(): BankQuestion[] {
         id: `m3-${pad(i++)}`,
         prompt: `${a} × ${b} = ?`,
         answer: String(a * b),
+        semester: 1,
+        unitCode: "M3-1-01",
         tags: ["mul"],
       });
     }
@@ -113,6 +128,8 @@ function genMath3(): BankQuestion[] {
       id: `m3-${pad(i++)}`,
       prompt: `${A} ÷ ${B} = ?`,
       answer: String(A / B),
+      semester: 2,
+      unitCode: "M3-2-01",
       tags: ["div"],
     });
   }
@@ -153,6 +170,8 @@ function genEnglish1(): BankQuestion[] {
         id: `e1-${pad(i++)}`,
         prompt: `'${ko}'를 영어로 쓰세요`,
         answer: en,
+        semester: out.length < 20 ? 1 : 2,
+        unitCode: out.length < 20 ? "E1-1-01" : "E1-2-01",
         tags,
       });
     }
@@ -193,6 +212,8 @@ function genEnglish2(): BankQuestion[] {
         id: `e2-${pad(i++)}`,
         prompt: `'${ko}'를 영어로 쓰세요`,
         answer: en,
+        semester: out.length < 20 ? 1 : 2,
+        unitCode: out.length < 20 ? "E2-1-01" : "E2-2-01",
         tags,
       });
     }
@@ -233,6 +254,8 @@ function genEnglish3(): BankQuestion[] {
         id: `e3-${pad(i++)}`,
         prompt: `'${ko}'를 영어로 쓰세요`,
         answer: en,
+        semester: out.length < 20 ? 1 : 2,
+        unitCode: out.length < 20 ? "E3-1-01" : "E3-2-01",
         tags,
       });
     }

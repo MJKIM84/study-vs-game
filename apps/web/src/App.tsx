@@ -4,6 +4,7 @@ import "./App.css";
 
 type Grade = 1 | 2 | 3;
 type Subject = "math" | "english";
+type Semester = 1 | 2 | "all";
 
 type RoomPlayer = {
   id: string;
@@ -20,6 +21,8 @@ type RoomState = {
   totalQuestions: number;
   grade: Grade;
   subject: Subject;
+  semester: Semester;
+  excludeUnitCodes: string[];
   startAt: number | null;
 };
 
@@ -39,6 +42,8 @@ export default function App() {
   const [grade, setGrade] = useState<Grade>(1);
   const [subject, setSubject] = useState<Subject>("math");
   const [totalQuestions, setTotalQuestions] = useState<10 | 20>(10);
+  const [semester, setSemester] = useState<Semester>("all");
+  const [excludeUnitCodesText, setExcludeUnitCodesText] = useState("");
 
   // lobby/game state
   const [ready, setReady] = useState(false);
@@ -151,8 +156,21 @@ export default function App() {
 
   const current = questions?.[localIndex] ?? null;
 
+  function parseExcludeUnitCodes(): string[] {
+    return excludeUnitCodesText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
   function createRoom() {
-    socket.emit("room:create", { totalQuestions, grade, subject });
+    socket.emit("room:create", {
+      totalQuestions,
+      grade,
+      subject,
+      semester,
+      excludeUnitCodes: parseExcludeUnitCodes(),
+    });
     setPhase("lobby");
   }
 
@@ -228,6 +246,28 @@ export default function App() {
                 <option value={20}>20문제</option>
               </select>
             </div>
+
+            <div className="pill">
+              학기:
+              <select
+                className="select"
+                value={semester}
+                onChange={(e) => setSemester((e.target.value as unknown) as Semester)}
+              >
+                <option value="all">전체</option>
+                <option value={1}>1학기</option>
+                <option value={2}>2학기</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+            <input
+              className="input"
+              value={excludeUnitCodesText}
+              onChange={(e) => setExcludeUnitCodesText(e.target.value)}
+              placeholder="제외 unitCode(쉼표로 구분) 예: M1-1-01,E2-2-01"
+            />
           </div>
 
           <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
@@ -290,7 +330,7 @@ export default function App() {
           <div className="row between" style={{ marginTop: 8, flexWrap: "wrap" }}>
             <div>
               설정: <b>{room.grade}학년</b> · <b>{room.subject === "math" ? "수학" : "영어"}</b> ·{" "}
-              <b>{room.totalQuestions}</b>문제
+              <b>{room.totalQuestions}</b>문제 · <b>{room.semester === "all" ? "전체" : `${room.semester}학기`}</b>
             </div>
             <div className="pill">내 닉네임: <b>{me?.name ?? "..."}</b></div>
           </div>
