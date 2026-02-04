@@ -23,15 +23,9 @@ type RoomState = {
   startAt: number | null;
 };
 
-type Question = { id: string; prompt: string; answer: string };
+type Question = { id: string; prompt: string };
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:5174";
-
-function normAnswer(subject: Subject, s: string) {
-  const t = s.trim();
-  if (subject === "english") return t.toLowerCase();
-  return t;
-}
 
 export default function App() {
   const socket: Socket = useMemo(() => io(SERVER_URL, { transports: ["websocket"] }), []);
@@ -158,10 +152,13 @@ export default function App() {
 
   function submitAnswer() {
     if (!room || !current) return;
-    const isCorrect =
-      normAnswer(subject, answer) === normAnswer(subject, current.answer);
 
-    socket.emit("game:answer", { code: room.code, correct: isCorrect });
+    socket.emit("game:submit", {
+      code: room.code,
+      qi: localIndex,
+      answer,
+    });
+
     setLocalIndex((i) => i + 1);
     setAnswer("");
   }

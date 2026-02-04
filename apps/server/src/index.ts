@@ -25,6 +25,11 @@ type Question = {
   answer: string;
 };
 
+type PublicQuestion = {
+  id: string;
+  prompt: string;
+};
+
 type Player = {
   id: string;
   name: string;
@@ -32,6 +37,8 @@ type Player = {
   ready: boolean;
   correct: number;
   index: number; // current question index
+  lastSubmitAt?: number;
+  finishedAt?: number;
 };
 
 type Room = {
@@ -161,6 +168,8 @@ function roomState(room: Room) {
     ready: p.ready,
     correct: p.correct,
     index: p.index,
+    lastSubmitAt: p.lastSubmitAt ?? null,
+    finishedAt: p.finishedAt ?? null,
   }));
   return {
     code: room.code,
@@ -249,9 +258,13 @@ io.on("connection", (socket) => {
       room.startAt = Date.now() + 3000;
 
       io.to(room.code).emit("game:countdown", { startAt: room.startAt });
+      const publicQuestions: PublicQuestion[] = (room.questions ?? []).map((q) => ({
+        id: q.id,
+        prompt: q.prompt,
+      }));
       io.to(room.code).emit("game:questions", {
         seed: room.seed,
-        questions: room.questions,
+        questions: publicQuestions,
         timeLimitSec: room.totalQuestions === 10 ? 60 : 120,
       });
       io.to(room.code).emit("room:state", roomState(room));
@@ -260,48 +273,31 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(
-    "game:answer",
-    ({ code, correct }: { code: string; correct: boolean }) => {
-      const room = rooms.get(code);
-      if (!room || !room.started) return;
-      const p = room.players[playerId];
-      if (!p) return;
+  function finishGame(room: Room, reason: "completed" | "timeout") {
+    const players = Object.values(room.players);
+    if (players.length < 2) return;
 
-      if (correct) p.correct += 1;
-      p.index = Math.min(p.index + 1, room.totalQuestions);
+    // Rule (Claude 추천): correct 우선 → 동점이면 lastSubmitAt 빠른 쪽
+    const a = players[0];
+    const b = players[1];
 
-      io.to(room.code).emit("room:state", roomState(room));
+    let winnerId: string | null = null;
+    if (a.correct !== b.correct) winnerId = a.correct > b.correct ? a.id : b.id;
+    else {
+      const at = a.lastSubmitAt ?? Infinity;
+      const bt = b.lastSubmitAt ?? Infinity;
+      if (at !== bt) winnerId = at < bt ? a.id : b.id;
+      else winnerId = null;
+    }
 
-      // win condition: first to finish all questions (regardless of accuracy for now)
-      if (p.index >= room.totalQuestions) {
-        io.to(room.code).emit("game:finish", {
-          winnerId: p.id,
-          reason: "completed",
-        });
-        room.started = false;
-        room.startAt = undefined;
-        room.seed = undefined;
-        room.questions = undefined;
-        for (const pl of Object.values(room.players)) {
-          pl.ready = false;
-          pl.correct = 0;
-          pl.index = 0;
-        }
-        io.to(room.code).emit("room:state", roomState(room));
-      }
-    },
-  );
-
-  socket.on("game:timeout", ({ code }: { code: string }) => {
-    const room = rooms.get(code);
-    if (!room || !room.started) return;
-    const loser = room.players[playerId];
-    if (!loser) return;
-    const winner = Object.values(room.players).find((pl) => pl.id !== loser.id);
-    if (!winner) return;
-
-    io.to(room.code).emit("game:finish", { winnerId: winner.id, reason: "timeout" });
+    io.to(room.code).emit("game:finish", {
+      winnerId,
+      reason,
+      scores: {
+        [a.id]: { correct: a.correct, finishedAt: a.finishedAt ?? null, lastSubmitAt: a.lastSubmitAt ?? null },
+        [b.id]: { correct: b.correct, finishedAt: b.finishedAt ?? null, lastSubmitAt: b.lastSubmitAt ?? null },
+      },
+    });
 
     room.started = false;
     room.startAt = undefined;
@@ -311,8 +307,48 @@ io.on("connection", (socket) => {
       pl.ready = false;
       pl.correct = 0;
       pl.index = 0;
+      pl.lastSubmitAt = undefined;
+      pl.finishedAt = undefined;
     }
     io.to(room.code).emit("room:state", roomState(room));
+  }
+
+  socket.on(
+    "game:submit",
+    ({ code, qi, answer }: { code: string; qi: number; answer: string }) => {
+      const room = rooms.get(code);
+      if (!room || !room.started) return;
+      const p = room.players[playerId];
+      if (!p) return;
+      if (!room.questions) return;
+
+      const q = room.questions[qi];
+      if (!q) return;
+      if (qi !== p.index) return; // basic anti-desync
+
+      const submittedAt = Date.now();
+      p.lastSubmitAt = submittedAt;
+
+      const normalized = String(answer ?? "").trim();
+      const expected = String(q.answer).trim();
+      const correct = room.subject === "english" ? normalized.toLowerCase() === expected.toLowerCase() : normalized === expected;
+
+      if (correct) p.correct += 1;
+      p.index = Math.min(p.index + 1, room.totalQuestions);
+      if (p.index >= room.totalQuestions) p.finishedAt = submittedAt;
+
+      io.to(room.code).emit("room:state", roomState(room));
+
+      const players = Object.values(room.players);
+      const allDone = players.length === 2 && players.every((pl) => pl.index >= room.totalQuestions);
+      if (allDone) finishGame(room, "completed");
+    },
+  );
+
+  socket.on("game:timeout", ({ code }: { code: string }) => {
+    const room = rooms.get(code);
+    if (!room || !room.started) return;
+    finishGame(room, "timeout");
   });
 
   socket.on("disconnect", () => {
