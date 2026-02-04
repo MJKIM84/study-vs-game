@@ -78,6 +78,14 @@
   border: 1px solid #cbd5e1;
 }
 
+.select {
+  margin-left: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: white;
+}
+
 .pill {
   font-size: 12px;
   padding: 6px 10px;
@@ -167,6 +175,16 @@
   background: #f0fdf4;
   border: 1px solid #86efac;
   margin-bottom: 10px;
+}
+
+.qbox {
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.qprompt {
+  font-weight: 800;
 }
 
 .hint {

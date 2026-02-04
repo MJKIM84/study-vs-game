@@ -1,28 +1,64 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import "./App.css";
 
-type RoomPlayer = { id: string; name: string; ready: boolean; correct: number };
+type Grade = 1 | 2 | 3;
+type Subject = "math" | "english";
+
+type RoomPlayer = {
+  id: string;
+  name: string;
+  ready: boolean;
+  correct: number;
+  index: number;
+};
+
 type RoomState = {
   code: string;
   players: RoomPlayer[];
   started: boolean;
   totalQuestions: number;
+  grade: Grade;
+  subject: Subject;
   startAt: number | null;
 };
 
+type Question = { id: string; prompt: string; answer: string };
+
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:5174";
 
-function App() {
+function normAnswer(subject: Subject, s: string) {
+  const t = s.trim();
+  if (subject === "english") return t.toLowerCase();
+  return t;
+}
+
+export default function App() {
   const socket: Socket = useMemo(() => io(SERVER_URL, { transports: ["websocket"] }), []);
 
   const [phase, setPhase] = useState<"home" | "lobby" | "playing" | "result">("home");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+
+  // setup choices
+  const [grade, setGrade] = useState<Grade>(1);
+  const [subject, setSubject] = useState<Subject>("math");
+  const [totalQuestions, setTotalQuestions] = useState<10 | 20>(10);
+
+  // lobby/game state
   const [ready, setReady] = useState(false);
   const [countdownMs, setCountdownMs] = useState<number | null>(null);
   const [winnerId, setWinnerId] = useState<string | null>(null);
+
+  const [questions, setQuestions] = useState<Question[] | null>(null);
+  const [timeLimitSec, setTimeLimitSec] = useState<number>(60);
+  const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
+
+  const [answer, setAnswer] = useState("");
+  const [localIndex, setLocalIndex] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  const timeoutSentRef = useRef(false);
 
   useEffect(() => {
     socket.on("room:state", (state: RoomState) => {
@@ -43,10 +79,24 @@ function App() {
       tick();
     });
 
+    socket.on(
+      "game:questions",
+      ({ questions, timeLimitSec }: { questions: Question[]; timeLimitSec: number }) => {
+        setQuestions(questions);
+        setTimeLimitSec(timeLimitSec);
+        setLocalIndex(0);
+        setAnswer("");
+        timeoutSentRef.current = false;
+      },
+    );
+
     socket.on("game:finish", ({ winnerId }: { winnerId: string }) => {
       setWinnerId(winnerId);
       setPhase("result");
       setReady(false);
+      setTimeLeftMs(null);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
     });
 
     socket.on("error:toast", ({ message }: { message: string }) => {
@@ -56,20 +106,72 @@ function App() {
 
     return () => {
       socket.disconnect();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [socket]);
 
+  // overall timer: starts when countdown ends
+  useEffect(() => {
+    if (!room || phase !== "playing") return;
+    if (countdownMs !== null) return;
+    if (!room.startAt) return;
+
+    const endAt = room.startAt + timeLimitSec * 1000;
+
+    const tick = () => {
+      const ms = endAt - Date.now();
+      setTimeLeftMs(ms);
+      if (ms <= 0) {
+        setTimeLeftMs(0);
+        if (!timeoutSentRef.current) {
+          timeoutSentRef.current = true;
+          socket.emit("game:timeout", { code: room.code });
+        }
+        return;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+  }, [room?.code, room?.startAt, phase, countdownMs, timeLimitSec, socket]);
+
   const meId = socket.id;
   const me = room?.players.find((p) => p.id === meId);
+  const canAnswer =
+    phase === "playing" &&
+    countdownMs === null &&
+    timeLeftMs !== null &&
+    timeLeftMs > 0 &&
+    !!questions &&
+    localIndex < (room?.totalQuestions ?? 0);
 
-  const canAnswer = phase === "playing" && countdownMs === null;
+  const current = questions?.[localIndex] ?? null;
+
+  function createRoom() {
+    socket.emit("room:create", { totalQuestions, grade, subject });
+    setPhase("lobby");
+  }
+
+  function submitAnswer() {
+    if (!room || !current) return;
+    const isCorrect =
+      normAnswer(subject, answer) === normAnswer(subject, current.answer);
+
+    socket.emit("game:answer", { code: room.code, correct: isCorrect });
+    setLocalIndex((i) => i + 1);
+    setAnswer("");
+  }
 
   return (
     <div className="container">
       <header className="header">
         <div>
           <div className="title">Study VS Game (MVP)</div>
-          <div className="sub">수학/영어 학습 경쟁 게임 — 웹 1차 버전</div>
+          <div className="sub">1~3학년 · 수학/영어 · 익명 VS</div>
         </div>
         <div className="pill">server: {SERVER_URL}</div>
       </header>
@@ -78,25 +180,50 @@ function App() {
 
       {phase === "home" && (
         <section className="card">
-          <h2>시작</h2>
-          <div className="row">
-            <button
-              className="btn primary"
-              onClick={() => {
-                socket.emit("room:create", { totalQuestions: 10 });
-                setPhase("lobby");
-              }}
-            >
-              방 만들기 (10문제)
-            </button>
-            <button
-              className="btn"
-              onClick={() => {
-                socket.emit("room:create", { totalQuestions: 20 });
-                setPhase("lobby");
-              }}
-            >
-              방 만들기 (20문제)
+          <h2>게임 설정</h2>
+
+          <div className="row" style={{ marginTop: 10, flexWrap: "wrap" }}>
+            <div className="pill">
+              학년:
+              <select
+                className="select"
+                value={grade}
+                onChange={(e) => setGrade(Number(e.target.value) as Grade)}
+              >
+                <option value={1}>1학년</option>
+                <option value={2}>2학년</option>
+                <option value={3}>3학년</option>
+              </select>
+            </div>
+
+            <div className="pill">
+              과목:
+              <select
+                className="select"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value as Subject)}
+              >
+                <option value="math">수학</option>
+                <option value="english">영어</option>
+              </select>
+            </div>
+
+            <div className="pill">
+              문제 수:
+              <select
+                className="select"
+                value={totalQuestions}
+                onChange={(e) => setTotalQuestions(Number(e.target.value) as 10 | 20)}
+              >
+                <option value={10}>10문제</option>
+                <option value={20}>20문제</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="row" style={{ marginTop: 12 }}>
+            <button className="btn primary" onClick={createRoom}>
+              방 만들기
             </button>
           </div>
 
@@ -121,7 +248,7 @@ function App() {
           </div>
 
           <p className="hint">
-            MVP용 데모입니다. 2개 창(또는 시크릿 창)에서 접속하면 VS 느낌을 바로 볼 수 있습니다.
+            데모: 브라우저 2개 창에서 접속 → 방코드 공유 → 둘 다 READY → 문제 풀기
           </p>
         </section>
       )}
@@ -129,7 +256,9 @@ function App() {
       {(phase === "lobby" || phase === "playing" || phase === "result") && room && (
         <section className="card">
           <div className="row between">
-            <h2>방 코드: <span className="mono">{room.code}</span></h2>
+            <h2>
+              방 코드: <span className="mono">{room.code}</span>
+            </h2>
             <button
               className="btn"
               onClick={() => {
@@ -142,8 +271,11 @@ function App() {
             </button>
           </div>
 
-          <div className="row between">
-            <div>총 문제 수: <b>{room.totalQuestions}</b></div>
+          <div className="row between" style={{ marginTop: 8, flexWrap: "wrap" }}>
+            <div>
+              설정: <b>{room.grade}학년</b> · <b>{room.subject === "math" ? "수학" : "영어"}</b> ·{" "}
+              <b>{room.totalQuestions}</b>문제
+            </div>
             <div className="pill">내 닉네임: <b>{me?.name ?? "..."}</b></div>
           </div>
 
@@ -153,12 +285,14 @@ function App() {
                 <div className="row between">
                   <div>
                     <div className="pname">{p.name}</div>
-                    <div className="psub">정답: {p.correct}/{room.totalQuestions}</div>
+                    <div className="psub">
+                      진행: {p.index}/{room.totalQuestions} · 정답: {p.correct}
+                    </div>
                   </div>
                   <div className={`badge ${p.ready ? "ok" : ""}`}>{p.ready ? "READY" : "WAIT"}</div>
                 </div>
                 <div className="bar">
-                  <div className="barFill" style={{ width: `${(p.correct / room.totalQuestions) * 100}%` }} />
+                  <div className="barFill" style={{ width: `${(p.index / room.totalQuestions) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -177,12 +311,7 @@ function App() {
               >
                 {room.players.length < 2 ? "상대 기다리는 중..." : ready ? "준비 취소" : "준비"}
               </button>
-              <button
-                className="btn"
-                onClick={() => {
-                  window.location.reload();
-                }}
-              >
+              <button className="btn" onClick={() => window.location.reload()}>
                 나가기(리로드)
               </button>
             </div>
@@ -196,26 +325,40 @@ function App() {
                 </div>
               )}
 
-              <div className="row" style={{ marginTop: 10 }}>
-                <button
-                  className="btn primary"
-                  disabled={!canAnswer}
-                  onClick={() => socket.emit("game:answer", { code: room.code, correct: true })}
-                >
-                  정답 처리(+1) (데모)
-                </button>
-                <button
-                  className="btn"
-                  disabled={!canAnswer}
-                  onClick={() => socket.emit("game:answer", { code: room.code, correct: false })}
-                >
-                  오답 (데모)
-                </button>
-              </div>
+              {timeLeftMs !== null && (
+                <div className="row" style={{ marginTop: 10 }}>
+                  <div className="pill">
+                    남은 시간: <b>{Math.max(0, Math.ceil(timeLeftMs / 1000))}</b>s
+                  </div>
+                  <div className="pill">
+                    내 진행: <b>{localIndex}</b>/{room.totalQuestions}
+                  </div>
+                </div>
+              )}
 
-              <p className="hint">
-                다음 단계: 실제 문제(학년/과목별) 생성 + 타이머 + 입력 UI + 동시 문제 시드 공유.
-              </p>
+              <div style={{ marginTop: 10 }} className="qbox">
+                <div className="qprompt">
+                  Q{localIndex + 1}. {current?.prompt ?? "문제 불러오는 중..."}
+                </div>
+                <div className="row" style={{ marginTop: 10 }}>
+                  <input
+                    className="input"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    placeholder={room.subject === "math" ? "정답(숫자)" : "정답(영어)"}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && canAnswer) submitAnswer();
+                    }}
+                    disabled={!canAnswer}
+                  />
+                  <button className="btn primary" disabled={!canAnswer} onClick={submitAnswer}>
+                    제출
+                  </button>
+                </div>
+                <div className="hint">
+                  MVP 규칙: 먼저 {room.totalQuestions}문제 풀면 승리(정답 수는 표시만). 다음 단계에서 “정답 우선/오답 패널티”로 조정합니다.
+                </div>
+              </div>
             </div>
           )}
 
@@ -228,6 +371,9 @@ function App() {
                 className="btn primary"
                 onClick={() => {
                   setWinnerId(null);
+                  setQuestions(null);
+                  setLocalIndex(0);
+                  setAnswer("");
                   setPhase("lobby");
                 }}
               >
@@ -239,10 +385,10 @@ function App() {
       )}
 
       <footer className="footer">
-        <div className="mono">Tip: 두 개의 브라우저 창에서 접속해 READY를 누르면 3초 카운트다운 후 시작합니다.</div>
+        <div className="mono">
+          Tip: 2개 창에서 같은 방에 들어간 뒤 READY → 문제 세트 공유 → 제한시간 내 경쟁
+        </div>
       </footer>
     </div>
   );
 }
-
-export default App;
