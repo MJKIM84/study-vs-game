@@ -7,6 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
+    "gen:bank": "tsx src/scripts/generateBankV1.ts",
+    "qa:bank": "tsx src/scripts/qaBankV1.ts",
     "lint": "echo \"(todo)\""
   },
   "dependencies": {

@@ -3,7 +3,8 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import { customAlphabet } from "nanoid";
-import { QUESTION_BANK, type Semester } from "./questionBank.js";
+import { loadQuestionBank } from "./bankLoad.js";
+import { type Semester } from "./bankSchema.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -19,6 +20,8 @@ const io = new Server(server, {
 
 type Grade = 1 | 2 | 3;
 type Subject = "math" | "english";
+
+const BANK = loadQuestionBank().bank;
 
 type Question = {
   id: string;
@@ -111,8 +114,7 @@ function generateQuestions(opts: {
 }): Question[] {
   const rng = mulberry32(opts.seed);
 
-  const source =
-    opts.subject === "math" ? QUESTION_BANK.math[opts.grade] : QUESTION_BANK.english[opts.grade];
+  const source = opts.subject === "math" ? BANK.math[opts.grade] : BANK.english[opts.grade];
 
   const exclude = new Set(opts.excludeUnitCodes ?? []);
   let pool = source.filter((q) => !exclude.has(q.unitCode));
