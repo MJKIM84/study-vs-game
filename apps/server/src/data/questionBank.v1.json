@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-02-04T17:38:25.742Z",
+  "generatedAt": "2026-02-05T01:53:27.146Z",
   "bank": {
     "math": {
       "1": [
@@ -1206,6 +1206,1272 @@
           "unitCode": "M3-2-01",
           "tags": [
             "div"
+          ]
+        }
+      ],
+      "4": [
+        {
+          "id": "m4-001",
+          "prompt": "120 + 140 = ?",
+          "answer": "260",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-002",
+          "prompt": "123 + 161 = ?",
+          "answer": "284",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-003",
+          "prompt": "126 + 102 = ?",
+          "answer": "228",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-004",
+          "prompt": "129 + 123 = ?",
+          "answer": "252",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-005",
+          "prompt": "132 + 144 = ?",
+          "answer": "276",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-006",
+          "prompt": "135 + 165 = ?",
+          "answer": "300",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-007",
+          "prompt": "138 + 106 = ?",
+          "answer": "244",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-008",
+          "prompt": "141 + 127 = ?",
+          "answer": "268",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-009",
+          "prompt": "144 + 148 = ?",
+          "answer": "292",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-010",
+          "prompt": "147 + 169 = ?",
+          "answer": "316",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-011",
+          "prompt": "150 + 110 = ?",
+          "answer": "260",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-012",
+          "prompt": "153 + 131 = ?",
+          "answer": "284",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-013",
+          "prompt": "156 + 152 = ?",
+          "answer": "308",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-014",
+          "prompt": "159 + 173 = ?",
+          "answer": "332",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-015",
+          "prompt": "162 + 114 = ?",
+          "answer": "276",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-016",
+          "prompt": "165 + 135 = ?",
+          "answer": "300",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-017",
+          "prompt": "168 + 156 = ?",
+          "answer": "324",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-018",
+          "prompt": "171 + 177 = ?",
+          "answer": "348",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-019",
+          "prompt": "174 + 118 = ?",
+          "answer": "292",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-020",
+          "prompt": "177 + 139 = ?",
+          "answer": "316",
+          "semester": 1,
+          "unitCode": "M4-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m4-021",
+          "prompt": "14 × 9 = ?",
+          "answer": "126",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-022",
+          "prompt": "126 ÷ 9 = ?",
+          "answer": "14",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-023",
+          "prompt": "16 × 4 = ?",
+          "answer": "64",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-024",
+          "prompt": "64 ÷ 4 = ?",
+          "answer": "16",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-025",
+          "prompt": "18 × 6 = ?",
+          "answer": "108",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-026",
+          "prompt": "108 ÷ 6 = ?",
+          "answer": "18",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-027",
+          "prompt": "20 × 8 = ?",
+          "answer": "160",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-028",
+          "prompt": "160 ÷ 8 = ?",
+          "answer": "20",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-029",
+          "prompt": "22 × 3 = ?",
+          "answer": "66",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-030",
+          "prompt": "66 ÷ 3 = ?",
+          "answer": "22",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-031",
+          "prompt": "24 × 5 = ?",
+          "answer": "120",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-032",
+          "prompt": "120 ÷ 5 = ?",
+          "answer": "24",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-033",
+          "prompt": "26 × 7 = ?",
+          "answer": "182",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-034",
+          "prompt": "182 ÷ 7 = ?",
+          "answer": "26",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-035",
+          "prompt": "28 × 9 = ?",
+          "answer": "252",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-036",
+          "prompt": "252 ÷ 9 = ?",
+          "answer": "28",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-037",
+          "prompt": "12 × 4 = ?",
+          "answer": "48",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-038",
+          "prompt": "48 ÷ 4 = ?",
+          "answer": "12",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        },
+        {
+          "id": "m4-039",
+          "prompt": "14 × 6 = ?",
+          "answer": "84",
+          "semester": 2,
+          "unitCode": "M4-2-01",
+          "tags": [
+            "mul"
+          ]
+        },
+        {
+          "id": "m4-040",
+          "prompt": "84 ÷ 6 = ?",
+          "answer": "14",
+          "semester": 2,
+          "unitCode": "M4-2-02",
+          "tags": [
+            "div"
+          ]
+        }
+      ],
+      "5": [
+        {
+          "id": "m5-001",
+          "prompt": "1200 + 1500 = ?",
+          "answer": "2700",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-002",
+          "prompt": "1237 + 1207 = ?",
+          "answer": "2444",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-003",
+          "prompt": "1274 + 914 = ?",
+          "answer": "2188",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-004",
+          "prompt": "1311 + 1321 = ?",
+          "answer": "2632",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-005",
+          "prompt": "1348 + 1028 = ?",
+          "answer": "2376",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-006",
+          "prompt": "1385 + 1435 = ?",
+          "answer": "2820",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-007",
+          "prompt": "1422 + 1142 = ?",
+          "answer": "2564",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-008",
+          "prompt": "1459 + 1549 = ?",
+          "answer": "3008",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-009",
+          "prompt": "1496 + 1256 = ?",
+          "answer": "2752",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-010",
+          "prompt": "1533 + 963 = ?",
+          "answer": "2496",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-011",
+          "prompt": "1570 + 1370 = ?",
+          "answer": "2940",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-012",
+          "prompt": "1607 + 1077 = ?",
+          "answer": "2684",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-013",
+          "prompt": "1644 + 1484 = ?",
+          "answer": "3128",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-014",
+          "prompt": "1681 + 1191 = ?",
+          "answer": "2872",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-015",
+          "prompt": "1718 + 1598 = ?",
+          "answer": "3316",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-016",
+          "prompt": "1755 + 1305 = ?",
+          "answer": "3060",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-017",
+          "prompt": "1792 + 1012 = ?",
+          "answer": "2804",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-018",
+          "prompt": "1829 + 1419 = ?",
+          "answer": "3248",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-019",
+          "prompt": "1866 + 1126 = ?",
+          "answer": "2992",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-020",
+          "prompt": "1903 + 1533 = ?",
+          "answer": "3436",
+          "semester": 1,
+          "unitCode": "M5-1-01",
+          "tags": [
+            "add",
+            "multi-digit"
+          ]
+        },
+        {
+          "id": "m5-021",
+          "prompt": "30.0 + 2.3 = ?",
+          "answer": "32.3",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-022",
+          "prompt": "30.0 - 2.3 = ?",
+          "answer": "27.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-023",
+          "prompt": "32.2 + 4.5 = ?",
+          "answer": "36.7",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-024",
+          "prompt": "32.2 - 4.5 = ?",
+          "answer": "27.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-025",
+          "prompt": "34.4 + 6.7 = ?",
+          "answer": "41.1",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-026",
+          "prompt": "34.4 - 6.7 = ?",
+          "answer": "27.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-027",
+          "prompt": "36.6 + 1.9 = ?",
+          "answer": "38.5",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-028",
+          "prompt": "36.6 - 1.9 = ?",
+          "answer": "34.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-029",
+          "prompt": "38.8 + 3.1 = ?",
+          "answer": "41.9",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-030",
+          "prompt": "38.8 - 3.1 = ?",
+          "answer": "35.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-031",
+          "prompt": "10.0 + 3.3 = ?",
+          "answer": "13.3",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-032",
+          "prompt": "10.0 - 3.3 = ?",
+          "answer": "6.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-033",
+          "prompt": "12.2 + 5.5 = ?",
+          "answer": "17.7",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-034",
+          "prompt": "12.2 - 5.5 = ?",
+          "answer": "6.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-035",
+          "prompt": "14.4 + 0.7 = ?",
+          "answer": "15.1",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-036",
+          "prompt": "14.4 - 0.7 = ?",
+          "answer": "13.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-037",
+          "prompt": "16.6 + 2.9 = ?",
+          "answer": "19.5",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-038",
+          "prompt": "16.6 - 2.9 = ?",
+          "answer": "13.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        },
+        {
+          "id": "m5-039",
+          "prompt": "18.8 + 4.1 = ?",
+          "answer": "22.9",
+          "semester": 2,
+          "unitCode": "M5-2-01",
+          "tags": [
+            "decimal",
+            "add"
+          ]
+        },
+        {
+          "id": "m5-040",
+          "prompt": "18.8 - 4.1 = ?",
+          "answer": "14.7",
+          "semester": 2,
+          "unitCode": "M5-2-02",
+          "tags": [
+            "decimal",
+            "sub"
+          ]
+        }
+      ],
+      "6": [
+        {
+          "id": "m6-001",
+          "prompt": "80의 10% = ?",
+          "answer": "8",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-002",
+          "prompt": "90의 20% = ?",
+          "answer": "18",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-003",
+          "prompt": "100의 25% = ?",
+          "answer": "25",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-004",
+          "prompt": "110의 50% = ?",
+          "answer": "55",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-005",
+          "prompt": "120의 10% = ?",
+          "answer": "12",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-006",
+          "prompt": "130의 20% = ?",
+          "answer": "26",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-007",
+          "prompt": "140의 25% = ?",
+          "answer": "35",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-008",
+          "prompt": "150의 50% = ?",
+          "answer": "75",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-009",
+          "prompt": "160의 10% = ?",
+          "answer": "16",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-010",
+          "prompt": "170의 20% = ?",
+          "answer": "34",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-011",
+          "prompt": "180의 25% = ?",
+          "answer": "45",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-012",
+          "prompt": "190의 50% = ?",
+          "answer": "95",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-013",
+          "prompt": "200의 10% = ?",
+          "answer": "20",
+          "semester": 1,
+          "unitCode": "M6-1-01",
+          "tags": [
+            "percent"
+          ]
+        },
+        {
+          "id": "m6-014",
+          "prompt": "(63 + 25) × 9 = ?",
+          "answer": "792",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-015",
+          "prompt": "(64 + 26) × 3 = ?",
+          "answer": "270",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-016",
+          "prompt": "(65 + 27) × 4 = ?",
+          "answer": "368",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-017",
+          "prompt": "(66 + 28) × 5 = ?",
+          "answer": "470",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-018",
+          "prompt": "(67 + 29) × 6 = ?",
+          "answer": "576",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-019",
+          "prompt": "(68 + 30) × 7 = ?",
+          "answer": "686",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-020",
+          "prompt": "(69 + 31) × 8 = ?",
+          "answer": "800",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-021",
+          "prompt": "(70 + 12) × 9 = ?",
+          "answer": "738",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-022",
+          "prompt": "(71 + 13) × 3 = ?",
+          "answer": "252",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-023",
+          "prompt": "(72 + 14) × 4 = ?",
+          "answer": "344",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-024",
+          "prompt": "(73 + 15) × 5 = ?",
+          "answer": "440",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-025",
+          "prompt": "(74 + 16) × 6 = ?",
+          "answer": "540",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-026",
+          "prompt": "(75 + 17) × 7 = ?",
+          "answer": "644",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-027",
+          "prompt": "(76 + 18) × 8 = ?",
+          "answer": "752",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-028",
+          "prompt": "(77 + 19) × 9 = ?",
+          "answer": "864",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-029",
+          "prompt": "(78 + 20) × 3 = ?",
+          "answer": "294",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-030",
+          "prompt": "(79 + 21) × 4 = ?",
+          "answer": "400",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-031",
+          "prompt": "(80 + 22) × 5 = ?",
+          "answer": "510",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-032",
+          "prompt": "(81 + 23) × 6 = ?",
+          "answer": "624",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-033",
+          "prompt": "(82 + 24) × 7 = ?",
+          "answer": "742",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-034",
+          "prompt": "(83 + 25) × 8 = ?",
+          "answer": "864",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-035",
+          "prompt": "(84 + 26) × 9 = ?",
+          "answer": "990",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-036",
+          "prompt": "(85 + 27) × 3 = ?",
+          "answer": "336",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-037",
+          "prompt": "(86 + 28) × 4 = ?",
+          "answer": "456",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-038",
+          "prompt": "(87 + 29) × 5 = ?",
+          "answer": "580",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-039",
+          "prompt": "(88 + 30) × 6 = ?",
+          "answer": "708",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
+          ]
+        },
+        {
+          "id": "m6-040",
+          "prompt": "(89 + 31) × 7 = ?",
+          "answer": "840",
+          "semester": 2,
+          "unitCode": "M6-2-01",
+          "tags": [
+            "mixed"
           ]
         }
       ]
@@ -2534,6 +3800,1268 @@
           "tags": [
             "vocab",
             "animal"
+          ]
+        }
+      ],
+      "4": [
+        {
+          "id": "e4-001",
+          "prompt": "'아침'를 영어로 쓰세요",
+          "answer": "breakfast",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "food"
+          ]
+        },
+        {
+          "id": "e4-002",
+          "prompt": "'점심'를 영어로 쓰세요",
+          "answer": "lunch",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "food"
+          ]
+        },
+        {
+          "id": "e4-003",
+          "prompt": "'저녁'를 영어로 쓰세요",
+          "answer": "dinner",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "food"
+          ]
+        },
+        {
+          "id": "e4-004",
+          "prompt": "'시간'를 영어로 쓰세요",
+          "answer": "time",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e4-005",
+          "prompt": "'날씨'를 영어로 쓰세요",
+          "answer": "weather",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e4-006",
+          "prompt": "'사과'를 영어로 쓰세요",
+          "answer": "apple",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "fruit"
+          ]
+        },
+        {
+          "id": "e4-007",
+          "prompt": "'오렌지'를 영어로 쓰세요",
+          "answer": "orange",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "fruit"
+          ]
+        },
+        {
+          "id": "e4-008",
+          "prompt": "'포크'를 영어로 쓰세요",
+          "answer": "fork",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "object"
+          ]
+        },
+        {
+          "id": "e4-009",
+          "prompt": "'숟가락'를 영어로 쓰세요",
+          "answer": "spoon",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "object"
+          ]
+        },
+        {
+          "id": "e4-010",
+          "prompt": "'접시'를 영어로 쓰세요",
+          "answer": "plate",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "object"
+          ]
+        },
+        {
+          "id": "e4-011",
+          "prompt": "'우유'를 영어로 쓰세요",
+          "answer": "milk",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "drink"
+          ]
+        },
+        {
+          "id": "e4-012",
+          "prompt": "'물'를 영어로 쓰세요",
+          "answer": "water",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "drink"
+          ]
+        },
+        {
+          "id": "e4-013",
+          "prompt": "'빨강'를 영어로 쓰세요",
+          "answer": "red",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-014",
+          "prompt": "'파랑'를 영어로 쓰세요",
+          "answer": "blue",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-015",
+          "prompt": "'초록'를 영어로 쓰세요",
+          "answer": "green",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-016",
+          "prompt": "'노랑'를 영어로 쓰세요",
+          "answer": "yellow",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-017",
+          "prompt": "'아름다운'를 영어로 쓰세요",
+          "answer": "beautiful",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-018",
+          "prompt": "'빠른'를 영어로 쓰세요",
+          "answer": "fast",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-019",
+          "prompt": "'느린'를 영어로 쓰세요",
+          "answer": "slow",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-020",
+          "prompt": "'조용한'를 영어로 쓰세요",
+          "answer": "quiet",
+          "semester": 1,
+          "unitCode": "E4-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-021",
+          "prompt": "'아침'를 영어로 쓰세요",
+          "answer": "breakfast",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "food"
+          ]
+        },
+        {
+          "id": "e4-022",
+          "prompt": "'점심'를 영어로 쓰세요",
+          "answer": "lunch",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "food"
+          ]
+        },
+        {
+          "id": "e4-023",
+          "prompt": "'저녁'를 영어로 쓰세요",
+          "answer": "dinner",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "food"
+          ]
+        },
+        {
+          "id": "e4-024",
+          "prompt": "'시간'를 영어로 쓰세요",
+          "answer": "time",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e4-025",
+          "prompt": "'날씨'를 영어로 쓰세요",
+          "answer": "weather",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e4-026",
+          "prompt": "'사과'를 영어로 쓰세요",
+          "answer": "apple",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "fruit"
+          ]
+        },
+        {
+          "id": "e4-027",
+          "prompt": "'오렌지'를 영어로 쓰세요",
+          "answer": "orange",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "fruit"
+          ]
+        },
+        {
+          "id": "e4-028",
+          "prompt": "'포크'를 영어로 쓰세요",
+          "answer": "fork",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "object"
+          ]
+        },
+        {
+          "id": "e4-029",
+          "prompt": "'숟가락'를 영어로 쓰세요",
+          "answer": "spoon",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "object"
+          ]
+        },
+        {
+          "id": "e4-030",
+          "prompt": "'접시'를 영어로 쓰세요",
+          "answer": "plate",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "object"
+          ]
+        },
+        {
+          "id": "e4-031",
+          "prompt": "'우유'를 영어로 쓰세요",
+          "answer": "milk",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "drink"
+          ]
+        },
+        {
+          "id": "e4-032",
+          "prompt": "'물'를 영어로 쓰세요",
+          "answer": "water",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "drink"
+          ]
+        },
+        {
+          "id": "e4-033",
+          "prompt": "'빨강'를 영어로 쓰세요",
+          "answer": "red",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-034",
+          "prompt": "'파랑'를 영어로 쓰세요",
+          "answer": "blue",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-035",
+          "prompt": "'초록'를 영어로 쓰세요",
+          "answer": "green",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-036",
+          "prompt": "'노랑'를 영어로 쓰세요",
+          "answer": "yellow",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "color"
+          ]
+        },
+        {
+          "id": "e4-037",
+          "prompt": "'아름다운'를 영어로 쓰세요",
+          "answer": "beautiful",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-038",
+          "prompt": "'빠른'를 영어로 쓰세요",
+          "answer": "fast",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-039",
+          "prompt": "'느린'를 영어로 쓰세요",
+          "answer": "slow",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e4-040",
+          "prompt": "'조용한'를 영어로 쓰세요",
+          "answer": "quiet",
+          "semester": 2,
+          "unitCode": "E4-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        }
+      ],
+      "5": [
+        {
+          "id": "e5-001",
+          "prompt": "'환경'를 영어로 쓰세요",
+          "answer": "environment",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-002",
+          "prompt": "'미래'를 영어로 쓰세요",
+          "answer": "future",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-003",
+          "prompt": "'과학'를 영어로 쓰세요",
+          "answer": "science",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-004",
+          "prompt": "'역사'를 영어로 쓰세요",
+          "answer": "history",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-005",
+          "prompt": "'중요한'를 영어로 쓰세요",
+          "answer": "important",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-006",
+          "prompt": "'필요한'를 영어로 쓰세요",
+          "answer": "necessary",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-007",
+          "prompt": "'다른'를 영어로 쓰세요",
+          "answer": "different",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-008",
+          "prompt": "'비슷한'를 영어로 쓰세요",
+          "answer": "similar",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-009",
+          "prompt": "'문제'를 영어로 쓰세요",
+          "answer": "problem",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-010",
+          "prompt": "'해결'를 영어로 쓰세요",
+          "answer": "solution",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-011",
+          "prompt": "'연습'를 영어로 쓰세요",
+          "answer": "practice",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-012",
+          "prompt": "'경험'를 영어로 쓰세요",
+          "answer": "experience",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-013",
+          "prompt": "'선택'를 영어로 쓰세요",
+          "answer": "choice",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-014",
+          "prompt": "'계획'를 영어로 쓰세요",
+          "answer": "plan",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-015",
+          "prompt": "'여행'를 영어로 쓰세요",
+          "answer": "travel",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-016",
+          "prompt": "'건강'를 영어로 쓰세요",
+          "answer": "health",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-017",
+          "prompt": "'에너지'를 영어로 쓰세요",
+          "answer": "energy",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-018",
+          "prompt": "'인터넷'를 영어로 쓰세요",
+          "answer": "internet",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-019",
+          "prompt": "'기술'를 영어로 쓰세요",
+          "answer": "technology",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-020",
+          "prompt": "'안전'를 영어로 쓰세요",
+          "answer": "safety",
+          "semester": 1,
+          "unitCode": "E5-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-021",
+          "prompt": "'환경'를 영어로 쓰세요",
+          "answer": "environment",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-022",
+          "prompt": "'미래'를 영어로 쓰세요",
+          "answer": "future",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-023",
+          "prompt": "'과학'를 영어로 쓰세요",
+          "answer": "science",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-024",
+          "prompt": "'역사'를 영어로 쓰세요",
+          "answer": "history",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-025",
+          "prompt": "'중요한'를 영어로 쓰세요",
+          "answer": "important",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-026",
+          "prompt": "'필요한'를 영어로 쓰세요",
+          "answer": "necessary",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-027",
+          "prompt": "'다른'를 영어로 쓰세요",
+          "answer": "different",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-028",
+          "prompt": "'비슷한'를 영어로 쓰세요",
+          "answer": "similar",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e5-029",
+          "prompt": "'문제'를 영어로 쓰세요",
+          "answer": "problem",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-030",
+          "prompt": "'해결'를 영어로 쓰세요",
+          "answer": "solution",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-031",
+          "prompt": "'연습'를 영어로 쓰세요",
+          "answer": "practice",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-032",
+          "prompt": "'경험'를 영어로 쓰세요",
+          "answer": "experience",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-033",
+          "prompt": "'선택'를 영어로 쓰세요",
+          "answer": "choice",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-034",
+          "prompt": "'계획'를 영어로 쓰세요",
+          "answer": "plan",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-035",
+          "prompt": "'여행'를 영어로 쓰세요",
+          "answer": "travel",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-036",
+          "prompt": "'건강'를 영어로 쓰세요",
+          "answer": "health",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-037",
+          "prompt": "'에너지'를 영어로 쓰세요",
+          "answer": "energy",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-038",
+          "prompt": "'인터넷'를 영어로 쓰세요",
+          "answer": "internet",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-039",
+          "prompt": "'기술'를 영어로 쓰세요",
+          "answer": "technology",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e5-040",
+          "prompt": "'안전'를 영어로 쓰세요",
+          "answer": "safety",
+          "semester": 2,
+          "unitCode": "E5-2-01",
+          "tags": [
+            "vocab"
+          ]
+        }
+      ],
+      "6": [
+        {
+          "id": "e6-001",
+          "prompt": "'정확한'를 영어로 쓰세요",
+          "answer": "accurate",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-002",
+          "prompt": "'가능한'를 영어로 쓰세요",
+          "answer": "possible",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-003",
+          "prompt": "'불가능한'를 영어로 쓰세요",
+          "answer": "impossible",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-004",
+          "prompt": "'정직한'를 영어로 쓰세요",
+          "answer": "honest",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-005",
+          "prompt": "'용기'를 영어로 쓰세요",
+          "answer": "courage",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-006",
+          "prompt": "'성공'를 영어로 쓰세요",
+          "answer": "success",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-007",
+          "prompt": "'실패'를 영어로 쓰세요",
+          "answer": "failure",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-008",
+          "prompt": "'목표'를 영어로 쓰세요",
+          "answer": "goal",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-009",
+          "prompt": "'도전'를 영어로 쓰세요",
+          "answer": "challenge",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-010",
+          "prompt": "'결과'를 영어로 쓰세요",
+          "answer": "result",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-011",
+          "prompt": "'관계'를 영어로 쓰세요",
+          "answer": "relationship",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-012",
+          "prompt": "'의견'를 영어로 쓰세요",
+          "answer": "opinion",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-013",
+          "prompt": "'토론'를 영어로 쓰세요",
+          "answer": "discussion",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-014",
+          "prompt": "'공정한'를 영어로 쓰세요",
+          "answer": "fair",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-015",
+          "prompt": "'불공정한'를 영어로 쓰세요",
+          "answer": "unfair",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-016",
+          "prompt": "'책임'를 영어로 쓰세요",
+          "answer": "responsibility",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-017",
+          "prompt": "'기회'를 영어로 쓰세요",
+          "answer": "opportunity",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-018",
+          "prompt": "'발명'를 영어로 쓰세요",
+          "answer": "invention",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-019",
+          "prompt": "'발견'를 영어로 쓰세요",
+          "answer": "discovery",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-020",
+          "prompt": "'지식'를 영어로 쓰세요",
+          "answer": "knowledge",
+          "semester": 1,
+          "unitCode": "E6-1-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-021",
+          "prompt": "'정확한'를 영어로 쓰세요",
+          "answer": "accurate",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-022",
+          "prompt": "'가능한'를 영어로 쓰세요",
+          "answer": "possible",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-023",
+          "prompt": "'불가능한'를 영어로 쓰세요",
+          "answer": "impossible",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-024",
+          "prompt": "'정직한'를 영어로 쓰세요",
+          "answer": "honest",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-025",
+          "prompt": "'용기'를 영어로 쓰세요",
+          "answer": "courage",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-026",
+          "prompt": "'성공'를 영어로 쓰세요",
+          "answer": "success",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-027",
+          "prompt": "'실패'를 영어로 쓰세요",
+          "answer": "failure",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-028",
+          "prompt": "'목표'를 영어로 쓰세요",
+          "answer": "goal",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-029",
+          "prompt": "'도전'를 영어로 쓰세요",
+          "answer": "challenge",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-030",
+          "prompt": "'결과'를 영어로 쓰세요",
+          "answer": "result",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-031",
+          "prompt": "'관계'를 영어로 쓰세요",
+          "answer": "relationship",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-032",
+          "prompt": "'의견'를 영어로 쓰세요",
+          "answer": "opinion",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-033",
+          "prompt": "'토론'를 영어로 쓰세요",
+          "answer": "discussion",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-034",
+          "prompt": "'공정한'를 영어로 쓰세요",
+          "answer": "fair",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-035",
+          "prompt": "'불공정한'를 영어로 쓰세요",
+          "answer": "unfair",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab",
+            "adj"
+          ]
+        },
+        {
+          "id": "e6-036",
+          "prompt": "'책임'를 영어로 쓰세요",
+          "answer": "responsibility",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-037",
+          "prompt": "'기회'를 영어로 쓰세요",
+          "answer": "opportunity",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-038",
+          "prompt": "'발명'를 영어로 쓰세요",
+          "answer": "invention",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-039",
+          "prompt": "'발견'를 영어로 쓰세요",
+          "answer": "discovery",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
+          ]
+        },
+        {
+          "id": "e6-040",
+          "prompt": "'지식'를 영어로 쓰세요",
+          "answer": "knowledge",
+          "semester": 2,
+          "unitCode": "E6-2-01",
+          "tags": [
+            "vocab"
           ]
         }
       ]

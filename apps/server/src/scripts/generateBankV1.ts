@@ -18,11 +18,17 @@ function main() {
         1: QUESTION_BANK.math[1],
         2: QUESTION_BANK.math[2],
         3: QUESTION_BANK.math[3],
+        4: QUESTION_BANK.math[4],
+        5: QUESTION_BANK.math[5],
+        6: QUESTION_BANK.math[6],
       },
       english: {
         1: QUESTION_BANK.english[1],
         2: QUESTION_BANK.english[2],
         3: QUESTION_BANK.english[3],
+        4: QUESTION_BANK.english[4],
+        5: QUESTION_BANK.english[5],
+        6: QUESTION_BANK.english[6],
       },
     },
   };

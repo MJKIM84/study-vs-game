@@ -1,4 +1,4 @@
-export type Grade = 1 | 2 | 3;
+export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 export type Subject = "math" | "english";
 
 export type Semester = 1 | 2;
@@ -25,11 +25,17 @@ export const QUESTION_BANK: QuestionBank = {
     1: genMath1(),
     2: genMath2(),
     3: genMath3(),
+    4: genMath4(),
+    5: genMath5(),
+    6: genMath6(),
   },
   english: {
     1: genEnglish1(),
     2: genEnglish2(),
     3: genEnglish3(),
+    4: genEnglish4(),
+    5: genEnglish5(),
+    6: genEnglish6(),
   },
 };
 
@@ -256,6 +262,264 @@ function genEnglish3(): BankQuestion[] {
         answer: en,
         semester: out.length < 20 ? 1 : 2,
         unitCode: out.length < 20 ? "E3-1-01" : "E3-2-01",
+        tags,
+      });
+    }
+  }
+  return out;
+}
+
+function genMath4(): BankQuestion[] {
+  const out: BankQuestion[] = [];
+  let i = 1;
+
+  for (let a = 120; a <= 180 && out.length < 20; a += 3) {
+    const b = 100 + ((a * 7) % 80);
+    out.push({
+      id: `m4-${pad(i++)}`,
+      prompt: `${a} + ${b} = ?`,
+      answer: String(a + b),
+      semester: 1,
+      unitCode: `M4-1-01`,
+      tags: ["add", "multi-digit"],
+    });
+  }
+  for (let a = 300; a <= 360 && out.length < 20; a += 4) {
+    const b = 120 + ((a * 5) % 100);
+    out.push({
+      id: `m4-${pad(i++)}`,
+      prompt: `${a} - ${b} = ?`,
+      answer: String(a - b),
+      semester: 1,
+      unitCode: `M4-1-02`,
+      tags: ["sub", "multi-digit"],
+    });
+  }
+
+  while (out.length < 40) {
+    const a = 12 + (out.length % 18);
+    const b = 3 + (out.length % 7);
+    out.push({
+      id: `m4-${pad(i++)}`,
+      prompt: `${a} × ${b} = ?`,
+      answer: String(a * b),
+      semester: 2,
+      unitCode: `M4-2-01`,
+      tags: ["mul"],
+    });
+    if (out.length >= 40) break;
+    out.push({
+      id: `m4-${pad(i++)}`,
+      prompt: `${a * b} ÷ ${b} = ?`,
+      answer: String(a),
+      semester: 2,
+      unitCode: `M4-2-02`,
+      tags: ["div"],
+    });
+  }
+  return out.slice(0, 40);
+}
+
+function genMath5(): BankQuestion[] {
+  const out: BankQuestion[] = [];
+  let i = 1;
+
+  for (let a = 1200; a <= 2000 && out.length < 20; a += 37) {
+    const b = 900 + ((a * 11) % 700);
+    out.push({
+      id: `m5-${pad(i++)}`,
+      prompt: `${a} + ${b} = ?`,
+      answer: String(a + b),
+      semester: 1,
+      unitCode: `M5-1-01`,
+      tags: ["add", "multi-digit"],
+    });
+  }
+
+  while (out.length < 40) {
+    const x = 10 + (out.length % 30);
+    const y = (out.length % 10) / 10;
+    const a = Number((x + y).toFixed(1));
+    const b = Number(((x % 7) + ((out.length + 3) % 10) / 10).toFixed(1));
+
+    out.push({
+      id: `m5-${pad(i++)}`,
+      prompt: `${a.toFixed(1)} + ${b.toFixed(1)} = ?`,
+      answer: (a + b).toFixed(1),
+      semester: 2,
+      unitCode: `M5-2-01`,
+      tags: ["decimal", "add"],
+    });
+    if (out.length >= 40) break;
+
+    const hi = Math.max(a, b);
+    const lo = Math.min(a, b);
+    out.push({
+      id: `m5-${pad(i++)}`,
+      prompt: `${hi.toFixed(1)} - ${lo.toFixed(1)} = ?`,
+      answer: (hi - lo).toFixed(1),
+      semester: 2,
+      unitCode: `M5-2-02`,
+      tags: ["decimal", "sub"],
+    });
+  }
+
+  return out.slice(0, 40);
+}
+
+function genMath6(): BankQuestion[] {
+  const out: BankQuestion[] = [];
+  let i = 1;
+
+  const percents = [10, 20, 25, 50];
+  for (let base = 80; base <= 200 && out.length < 20; base += 10) {
+    const p = percents[out.length % percents.length];
+    out.push({
+      id: `m6-${pad(i++)}`,
+      prompt: `${base}의 ${p}% = ?`,
+      answer: String((base * p) / 100),
+      semester: 1,
+      unitCode: `M6-1-01`,
+      tags: ["percent"],
+    });
+  }
+
+  while (out.length < 40) {
+    const a = 50 + (out.length % 50);
+    const b = 12 + (out.length % 20);
+    const c = 3 + (out.length % 7);
+    out.push({
+      id: `m6-${pad(i++)}`,
+      prompt: `(${a} + ${b}) × ${c} = ?`,
+      answer: String((a + b) * c),
+      semester: 2,
+      unitCode: `M6-2-01`,
+      tags: ["mixed"],
+    });
+  }
+
+  return out.slice(0, 40);
+}
+
+function genEnglish4(): BankQuestion[] {
+  const items: Array<[string, string, string[]]> = [
+    ["아침", "breakfast", ["vocab", "food"]],
+    ["점심", "lunch", ["vocab", "food"]],
+    ["저녁", "dinner", ["vocab", "food"]],
+    ["시간", "time", ["vocab"]],
+    ["날씨", "weather", ["vocab"]],
+    ["사과", "apple", ["vocab", "fruit"]],
+    ["오렌지", "orange", ["vocab", "fruit"]],
+    ["포크", "fork", ["vocab", "object"]],
+    ["숟가락", "spoon", ["vocab", "object"]],
+    ["접시", "plate", ["vocab", "object"]],
+    ["우유", "milk", ["vocab", "drink"]],
+    ["물", "water", ["vocab", "drink"]],
+    ["빨강", "red", ["vocab", "color"]],
+    ["파랑", "blue", ["vocab", "color"]],
+    ["초록", "green", ["vocab", "color"]],
+    ["노랑", "yellow", ["vocab", "color"]],
+    ["아름다운", "beautiful", ["vocab", "adj"]],
+    ["빠른", "fast", ["vocab", "adj"]],
+    ["느린", "slow", ["vocab", "adj"]],
+    ["조용한", "quiet", ["vocab", "adj"]],
+  ];
+
+  const out: BankQuestion[] = [];
+  let i = 1;
+  while (out.length < 40) {
+    for (const [ko, en, tags] of items) {
+      if (out.length >= 40) break;
+      out.push({
+        id: `e4-${pad(i++)}`,
+        prompt: `'${ko}'를 영어로 쓰세요`,
+        answer: en,
+        semester: out.length < 20 ? 1 : 2,
+        unitCode: out.length < 20 ? "E4-1-01" : "E4-2-01",
+        tags,
+      });
+    }
+  }
+  return out;
+}
+
+function genEnglish5(): BankQuestion[] {
+  const items: Array<[string, string, string[]]> = [
+    ["환경", "environment", ["vocab"]],
+    ["미래", "future", ["vocab"]],
+    ["과학", "science", ["vocab"]],
+    ["역사", "history", ["vocab"]],
+    ["중요한", "important", ["vocab", "adj"]],
+    ["필요한", "necessary", ["vocab", "adj"]],
+    ["다른", "different", ["vocab", "adj"]],
+    ["비슷한", "similar", ["vocab", "adj"]],
+    ["문제", "problem", ["vocab"]],
+    ["해결", "solution", ["vocab"]],
+    ["연습", "practice", ["vocab"]],
+    ["경험", "experience", ["vocab"]],
+    ["선택", "choice", ["vocab"]],
+    ["계획", "plan", ["vocab"]],
+    ["여행", "travel", ["vocab"]],
+    ["건강", "health", ["vocab"]],
+    ["에너지", "energy", ["vocab"]],
+    ["인터넷", "internet", ["vocab"]],
+    ["기술", "technology", ["vocab"]],
+    ["안전", "safety", ["vocab"]],
+  ];
+
+  const out: BankQuestion[] = [];
+  let i = 1;
+  while (out.length < 40) {
+    for (const [ko, en, tags] of items) {
+      if (out.length >= 40) break;
+      out.push({
+        id: `e5-${pad(i++)}`,
+        prompt: `'${ko}'를 영어로 쓰세요`,
+        answer: en,
+        semester: out.length < 20 ? 1 : 2,
+        unitCode: out.length < 20 ? "E5-1-01" : "E5-2-01",
+        tags,
+      });
+    }
+  }
+  return out;
+}
+
+function genEnglish6(): BankQuestion[] {
+  const items: Array<[string, string, string[]]> = [
+    ["정확한", "accurate", ["vocab", "adj"]],
+    ["가능한", "possible", ["vocab", "adj"]],
+    ["불가능한", "impossible", ["vocab", "adj"]],
+    ["정직한", "honest", ["vocab", "adj"]],
+    ["용기", "courage", ["vocab"]],
+    ["성공", "success", ["vocab"]],
+    ["실패", "failure", ["vocab"]],
+    ["목표", "goal", ["vocab"]],
+    ["도전", "challenge", ["vocab"]],
+    ["결과", "result", ["vocab"]],
+    ["관계", "relationship", ["vocab"]],
+    ["의견", "opinion", ["vocab"]],
+    ["토론", "discussion", ["vocab"]],
+    ["공정한", "fair", ["vocab", "adj"]],
+    ["불공정한", "unfair", ["vocab", "adj"]],
+    ["책임", "responsibility", ["vocab"]],
+    ["기회", "opportunity", ["vocab"]],
+    ["발명", "invention", ["vocab"]],
+    ["발견", "discovery", ["vocab"]],
+    ["지식", "knowledge", ["vocab"]],
+  ];
+
+  const out: BankQuestion[] = [];
+  let i = 1;
+  while (out.length < 40) {
+    for (const [ko, en, tags] of items) {
+      if (out.length >= 40) break;
+      out.push({
+        id: `e6-${pad(i++)}`,
+        prompt: `'${ko}'를 영어로 쓰세요`,
+        answer: en,
+        semester: out.length < 20 ? 1 : 2,
+        unitCode: out.length < 20 ? "E6-1-01" : "E6-2-01",
         tags,
       });
     }

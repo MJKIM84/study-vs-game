@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import "./App.css";
 
-type Grade = 1 | 2 | 3;
+type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 type Subject = "math" | "english";
 type Semester = 1 | 2 | "all";
 
@@ -318,7 +318,13 @@ export default function App() {
   }
 
   function quickMatch() {
-    socket.emit("queue:join", { totalQuestions, grade, subject });
+    socket.emit("queue:join", {
+      totalQuestions,
+      grade,
+      subject,
+      semester,
+      excludeUnitCodes: parseExcludeUnitCodes(),
+    });
     setToast("매칭 대기중...");
     setTimeout(() => setToast(null), 2000);
   }
@@ -469,6 +475,9 @@ export default function App() {
                 <option value={1}>1학년</option>
                 <option value={2}>2학년</option>
                 <option value={3}>3학년</option>
+                <option value={4}>4학년</option>
+                <option value={5}>5학년</option>
+                <option value={6}>6학년</option>
               </select>
             </div>
 

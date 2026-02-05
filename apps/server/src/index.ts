@@ -40,7 +40,7 @@ app.get("/leaderboard", async (req, res) => {
 
 // Bank metadata for UI (unit codes, counts)
 app.get("/bank/meta", (req, res) => {
-  const grade = Number(req.query.grade ?? 1) as 1 | 2 | 3;
+  const grade = Number(req.query.grade ?? 1) as 1 | 2 | 3 | 4 | 5 | 6;
   const subject = (String(req.query.subject ?? "math") as "math" | "english");
   const semester = (String(req.query.semester ?? "all") as "all" | "1" | "2");
 
@@ -74,7 +74,7 @@ const io = new Server(server, {
   cors: { origin: CLIENT_ORIGIN, credentials: true },
 });
 
-type Grade = 1 | 2 | 3;
+type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 type Subject = "math" | "english";
 
 const BANK = loadQuestionBank().bank;
@@ -121,15 +121,20 @@ type Room = {
 const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 4);
 const rooms = new Map<string, Room>();
 
-// Simple matchmaking queue (MVP): pairs players by (grade, subject, totalQuestions)
+// Simple matchmaking queue (MVP): pairs players by (grade, subject, totalQuestions, semester)
 // NOTE: no persistence; best-effort cleanup on disconnect.
-const queues = new Map<string, string[]>();
-function queueKey(opts: { grade: Grade; subject: Subject; totalQuestions: number }) {
-  return `${opts.grade}:${opts.subject}:${opts.totalQuestions}`;
+type QueueEntry = {
+  socketId: string;
+  semester: Semester | "all";
+  excludeUnitCodes: string[];
+};
+const queues = new Map<string, QueueEntry[]>();
+function queueKey(opts: { grade: Grade; subject: Subject; totalQuestions: number; semester: Semester | "all" }) {
+  return `${opts.grade}:${opts.subject}:${opts.totalQuestions}:${opts.semester}`;
 }
 function queueRemove(socketId: string) {
   for (const [k, arr] of queues) {
-    const idx = arr.indexOf(socketId);
+    const idx = arr.findIndex((x) => x.socketId === socketId);
     if (idx >= 0) {
       arr.splice(idx, 1);
       if (arr.length === 0) queues.delete(k);
@@ -326,33 +331,47 @@ io.on("connection", async (socket) => {
   socket.on(
     "queue:join",
     async (
-      { totalQuestions, grade, subject }: { totalQuestions?: number; grade?: Grade; subject?: Subject } = {},
+      {
+        totalQuestions,
+        grade,
+        subject,
+        semester,
+        excludeUnitCodes,
+      }: {
+        totalQuestions?: number;
+        grade?: Grade;
+        subject?: Subject;
+        semester?: Semester | "all";
+        excludeUnitCodes?: string[];
+      } = {},
     ) => {
       queueRemove(socket.id);
 
       const g: Grade = grade ?? 1;
       const s: Subject = subject ?? "math";
       const t = totalQuestions ?? 10;
+      const sem: Semester | "all" = semester ?? "all";
+      const ex: string[] = excludeUnitCodes ?? [];
 
-      const key = queueKey({ grade: g, subject: s, totalQuestions: t });
+      const key = queueKey({ grade: g, subject: s, totalQuestions: t, semester: sem });
       const arr = queues.get(key) ?? [];
       if (!queues.has(key)) queues.set(key, arr);
 
       // Prevent duplicates
-      if (!arr.includes(socket.id)) arr.push(socket.id);
+      if (!arr.some((x) => x.socketId === socket.id)) arr.push({ socketId: socket.id, semester: sem, excludeUnitCodes: ex });
 
       // Matched!
       if (arr.length >= 2) {
-        const aId = arr.shift()!;
-        const bId = arr.shift()!;
+        const a = arr.shift()!;
+        const b = arr.shift()!;
         if (arr.length === 0) queues.delete(key);
 
-        const aSock = io.sockets.sockets.get(aId);
-        const bSock = io.sockets.sockets.get(bId);
+        const aSock = io.sockets.sockets.get(a.socketId);
+        const bSock = io.sockets.sockets.get(b.socketId);
         if (!aSock || !bSock) {
           // best-effort cleanup; requeue the live one
-          if (aSock && !arr.includes(aId)) arr.unshift(aId);
-          if (bSock && !arr.includes(bId)) arr.unshift(bId);
+          if (aSock && !arr.some((x) => x.socketId === a.socketId)) arr.unshift(a);
+          if (bSock && !arr.some((x) => x.socketId === b.socketId)) arr.unshift(b);
           queues.set(key, arr);
           return;
         }
@@ -361,8 +380,10 @@ io.on("connection", async (socket) => {
         room.totalQuestions = t;
         room.grade = g;
         room.subject = s;
-        room.semester = "all";
-        room.excludeUnitCodes = [];
+        room.semester = sem;
+
+        // Exclude union (safer: avoid giving either player unlearned units)
+        room.excludeUnitCodes = Array.from(new Set([...(a.excludeUnitCodes ?? []), ...(b.excludeUnitCodes ?? [])]));
 
         const aName = randomAnonName();
         const bName = randomAnonName();
@@ -372,10 +393,10 @@ io.on("connection", async (socket) => {
         const aAuthed = aToken ? await verifyToken(aToken) : null;
         const bAuthed = bToken ? await verifyToken(bToken) : null;
 
-        room.players[aId] = {
-          id: aId,
+        room.players[a.socketId] = {
+          id: a.socketId,
           name: aAuthed?.nickname ?? aName,
-          socketId: aId,
+          socketId: a.socketId,
           userId: aAuthed?.id,
           username: aAuthed?.username,
           nickname: aAuthed?.nickname,
@@ -383,10 +404,10 @@ io.on("connection", async (socket) => {
           correct: 0,
           index: 0,
         };
-        room.players[bId] = {
-          id: bId,
+        room.players[b.socketId] = {
+          id: b.socketId,
           name: bAuthed?.nickname ?? bName,
-          socketId: bId,
+          socketId: b.socketId,
           userId: bAuthed?.id,
           username: bAuthed?.username,
           nickname: bAuthed?.nickname,

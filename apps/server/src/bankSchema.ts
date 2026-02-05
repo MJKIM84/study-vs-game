@@ -1,6 +1,13 @@
 import { z } from "zod";
 
-export const GradeSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
+export const GradeSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+  z.literal(6),
+]);
 export type Grade = z.infer<typeof GradeSchema>;
 
 export const SubjectSchema = z.union([z.literal("math"), z.literal("english")]);
@@ -27,11 +34,17 @@ export const QuestionBankSchema = z.object({
       1: z.array(BankQuestionSchema),
       2: z.array(BankQuestionSchema),
       3: z.array(BankQuestionSchema),
+      4: z.array(BankQuestionSchema),
+      5: z.array(BankQuestionSchema),
+      6: z.array(BankQuestionSchema),
     }),
     english: z.object({
       1: z.array(BankQuestionSchema),
       2: z.array(BankQuestionSchema),
       3: z.array(BankQuestionSchema),
+      4: z.array(BankQuestionSchema),
+      5: z.array(BankQuestionSchema),
+      6: z.array(BankQuestionSchema),
     }),
   }),
 });

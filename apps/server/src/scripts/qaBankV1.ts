@@ -13,7 +13,7 @@ function main() {
   let total = 0;
 
   for (const subject of ["math", "english"] as const) {
-    for (const grade of ["1", "2", "3"] as const) {
+    for (const grade of ["1", "2", "3", "4", "5", "6"] as const) {
       const arr = (b.bank as any)[subject][grade] as any[];
       for (const q of arr) {
         total += 1;
