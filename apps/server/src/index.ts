@@ -9,6 +9,7 @@ import { getMe, postLogin, postSignup, requireAuth } from "./httpAuthRoutes.js";
 import { leaderboard, recordMatchAndUpdateRatings, modeKey } from "./ratings.js";
 import { verifyToken } from "./auth.js";
 import { getMeStats } from "./meRoutes.js";
+import { getMyMatches } from "./matchRoutes.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -23,6 +24,7 @@ app.post("/auth/signup", postSignup);
 app.post("/auth/login", postLogin);
 app.get("/auth/me", getMe);
 app.get("/me/stats", requireAuth, getMeStats);
+app.get("/me/matches", requireAuth, getMyMatches);
 
 // Leaderboard
 app.get("/leaderboard", async (req, res) => {

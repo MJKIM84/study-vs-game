@@ -87,6 +87,7 @@ export default function App() {
 
   const [meStats, setMeStats] = useState<MeStats | null>(null);
   const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[] | null>(null);
+  const [myMatches, setMyMatches] = useState<any[] | null>(null);
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -230,6 +231,25 @@ export default function App() {
 
     return () => ac.abort();
   }, [token, phase, grade, subject, semester, totalQuestions]);
+
+  // Fetch my recent matches (after login)
+  useEffect(() => {
+    if (!token) {
+      setMyMatches(null);
+      return;
+    }
+    const ac = new AbortController();
+
+    fetch(`${SERVER_URL}/me/matches?limit=10`, {
+      signal: ac.signal,
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j) => setMyMatches(j.rows ?? []))
+      .catch(() => setMyMatches(null));
+
+    return () => ac.abort();
+  }, [token]);
 
   // overall timer: starts when countdown ends
   useEffect(() => {
@@ -386,6 +406,19 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {meUser && myMatches && (
+          <div style={{ marginTop: 10 }}>
+            <div className="hint">최근 경기(내가 만든 방 기준, MVP)</div>
+            <ol className="mono" style={{ marginTop: 6 }}>
+              {myMatches.slice(0, 10).map((m: any) => (
+                <li key={m.id}>
+                  {new Date(m.createdAt).toLocaleString()} — {m.modeKey} — winner: {m.winnerUserId ?? "draw/anon"}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {!meUser && (
           <div style={{ marginTop: 10 }}>
