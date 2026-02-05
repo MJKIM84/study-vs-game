@@ -86,7 +86,7 @@ export default function App() {
     [token],
   );
 
-  const [screen, setScreen] = useState<"welcome" | "setup" | "menu" | "friend" | "lobby" | "playing" | "result">("welcome");
+  const [screen, setScreen] = useState<"welcome" | "setup" | "menu" | "badges" | "friend" | "lobby" | "playing" | "result">("welcome");
   const [phase, setPhase] = useState<"home" | "lobby" | "playing" | "result">("home");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [joinCode, setJoinCode] = useState("");
@@ -115,6 +115,8 @@ export default function App() {
   const [meStats, setMeStats] = useState<MeStats | null>(null);
   const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[] | null>(null);
   const [earnedBadges, setEarnedBadges] = useState<Badge[]>([]);
+  const [badgeCatalog, setBadgeCatalog] = useState<Badge[] | null>(null);
+  const [myBadges, setMyBadges] = useState<Badge[] | null>(null);
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -273,6 +275,28 @@ export default function App() {
 
     return () => ac.abort();
   }, [grade, subject, semester, totalQuestions]);
+
+  // Fetch badge catalog + my badges (for collection screen)
+  useEffect(() => {
+    const ac = new AbortController();
+
+    fetch(`${SERVER_URL}/badges`, { signal: ac.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j) => setBadgeCatalog(j.badges ?? []))
+      .catch(() => setBadgeCatalog(null));
+
+    if (token) {
+      fetch(`${SERVER_URL}/me/badges`, {
+        signal: ac.signal,
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((j) => setMyBadges(j.badges ?? []))
+        .catch(() => setMyBadges(null));
+    }
+
+    return () => ac.abort();
+  }, [token]);
 
   // Fetch my stats for current mode (only after result)
   useEffect(() => {
@@ -713,11 +737,14 @@ export default function App() {
           <div className="row between">
             <h2 className="sectionTitle">메뉴</h2>
             <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
-              <button className="btn" onClick={() => setScreen("welcome")}>
-                계정
+              <button className="btn" onClick={() => setScreen("badges")}>
+                뱃지
               </button>
               <button className="btn" onClick={() => setScreen("setup")}>
                 셋업
+              </button>
+              <button className="btn" onClick={() => setScreen("welcome")}>
+                계정
               </button>
             </div>
           </div>
@@ -772,6 +799,107 @@ export default function App() {
               </ol>
             </div>
           )}
+        </section>
+      )}
+
+      {/* Badge Collection */}
+      {screen === "badges" && (
+        <section className="card">
+          <div className="row between">
+            <h2 className="sectionTitle">뱃지 컬렉션</h2>
+            <button className="btn" onClick={() => setScreen("menu")}>
+              메뉴로
+            </button>
+          </div>
+
+          {!token && (
+            <div className="hint" style={{ marginTop: 10 }}>
+              로그인하면 뱃지 획득/저장이 됩니다. (익명은 컬렉션 저장 안 함)
+            </div>
+          )}
+
+          <div style={{ marginTop: 12 }}>
+            <div className="hint">획득한 뱃지</div>
+            <div
+              style={{
+                marginTop: 8,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 12,
+              }}
+            >
+              {(myBadges ?? []).length === 0 && (
+                <div className="hint">아직 뱃지가 없어요. 게임을 하고 첫 뱃지를 획득해보세요!</div>
+              )}
+              {(myBadges ?? []).map((b) => (
+                <div key={b.code} className="player" style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <img
+                    src={svgToDataUri(b.icon)}
+                    width={64}
+                    height={64}
+                    alt={b.name}
+                    style={{ filter: "drop-shadow(0 10px 16px rgba(0,0,0,0.35))" }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 1000 }}>{b.name}</div>
+                    <div className="hint" style={{ marginTop: 4 }}>
+                      {b.description}
+                    </div>
+                    <div className="pill" style={{ marginTop: 8, display: "inline-flex" }}>
+                      {b.rarity}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <div className="hint">전체 뱃지</div>
+            <div
+              style={{
+                marginTop: 8,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                gap: 12,
+              }}
+            >
+              {(badgeCatalog ?? []).map((b) => {
+                const earned = (myBadges ?? []).some((x) => x.code === b.code);
+                return (
+                  <div
+                    key={b.code}
+                    className="player"
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "center",
+                      opacity: earned ? 1 : 0.55,
+                    }}
+                  >
+                    <img
+                      src={svgToDataUri(b.icon)}
+                      width={56}
+                      height={56}
+                      alt={b.name}
+                      style={{
+                        filter: "drop-shadow(0 10px 16px rgba(0,0,0,0.35))",
+                        transform: earned ? "none" : "grayscale(1)",
+                      }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 1000 }}>
+                        {b.name} {!earned && <span className="pill" style={{ marginLeft: 6 }}>LOCK</span>}
+                      </div>
+                      <div className="hint" style={{ marginTop: 4 }}>
+                        {b.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </section>
       )}
 
