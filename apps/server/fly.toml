@@ -1,0 +1,39 @@
+app = "study-vs-game-api"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "apps/server/Dockerfile"
+
+[env]
+  PORT = "5174"
+  # Set CLIENT_ORIGIN and JWT_SECRET in `fly secrets set`
+  # Use DATABASE_URL that points to the volume mount (see below)
+
+[[services]]
+  internal_port = 5174
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 800
+
+  [[services.http_checks]]
+    interval = "10s"
+    grace_period = "15s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    timeout = "2s"
+
+[mounts]
+  source = "svgame_data"
+  destination = "/data"
