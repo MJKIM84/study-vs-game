@@ -64,6 +64,15 @@ type MeStats = {
   ratings: RatingRow[];
 };
 
+type Badge = {
+  code: string;
+  name: string;
+  description: string;
+  icon: string; // raw SVG
+  rarity: string;
+  earnedAt?: string;
+};
+
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:5174";
 
 export default function App() {
@@ -105,6 +114,7 @@ export default function App() {
 
   const [meStats, setMeStats] = useState<MeStats | null>(null);
   const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[] | null>(null);
+  const [earnedBadges, setEarnedBadges] = useState<Badge[]>([]);
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -186,6 +196,12 @@ export default function App() {
       // Lightweight feedback (MVP)
       toastMsg(correct ? "정답!" : "오답!", 700);
       playSfx(correct ? "correct" : "wrong", sfxOn);
+    });
+
+    socket.on("badge:earned", (b: Badge) => {
+      setEarnedBadges((prev) => [b, ...prev].slice(0, 5));
+      toastMsg(`뱃지 획득: ${b.name}`, 1400);
+      playSfx("win", sfxOn);
     });
 
     socket.on("queue:matched", ({ code }: { code: string }) => {
@@ -318,6 +334,14 @@ export default function App() {
 
   const current = questions?.[localIndex] ?? null;
 
+  function svgToDataUri(svg: string) {
+    const encoded = encodeURIComponent(svg)
+      .replace(/'/g, "%27")
+      .replace(/\(/g, "%28")
+      .replace(/\)/g, "%29");
+    return `data:image/svg+xml,${encoded}`;
+  }
+
   function parseExcludeUnitCodes(): string[] {
     return excludeUnitCodesText
       .split(",")
@@ -418,6 +442,59 @@ export default function App() {
 
   return (
     <div className="container">
+      {earnedBadges.length > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 1200,
+          }}
+          onClick={() => setEarnedBadges([])}
+        >
+          <div className="card" style={{ maxWidth: 560, width: "100%" }} onClick={(e) => e.stopPropagation()}>
+            <div className="row between">
+              <div className="title">새 뱃지!</div>
+              <button className="btn" onClick={() => setEarnedBadges([])}>
+                닫기
+              </button>
+            </div>
+            <div className="hint">이번 게임에서 획득한 뱃지</div>
+
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+              {earnedBadges.map((b) => (
+                <div key={b.code} className="player" style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <img
+                    src={svgToDataUri(b.icon)}
+                    width={64}
+                    height={64}
+                    alt={b.name}
+                    style={{ filter: "drop-shadow(0 10px 16px rgba(0,0,0,0.35))" }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 1000 }}>{b.name}</div>
+                    <div className="hint" style={{ marginTop: 4 }}>
+                      {b.description}
+                    </div>
+                    <div className="pill" style={{ marginTop: 8, display: "inline-flex" }}>
+                      {b.rarity}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hint" style={{ marginTop: 12 }}>
+              (카드를 클릭하면 닫힙니다)
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="header">
         <div>
           <div className="title">Study VS Game</div>

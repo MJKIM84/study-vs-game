@@ -10,7 +10,7 @@ import { leaderboard, recordMatchAndUpdateRatings, modeKey } from "./ratings.js"
 import { verifyToken } from "./auth.js";
 import { getMeStats } from "./meRoutes.js";
 import { getMyMatches } from "./matchRoutes.js";
-import { listMyBadges, seedBadges } from "./badges.js";
+import { listBadges, listMyBadges, seedBadges, grantBadge } from "./badges.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -30,6 +30,12 @@ app.get("/me/badges", requireAuth, async (req, res) => {
   const u = (req as any).user as { id: string } | undefined;
   if (!u?.id) return res.status(401).json({ ok: false, error: "unauthorized" });
   const badges = await listMyBadges(u.id);
+  res.json({ ok: true, badges });
+});
+
+// Badge catalog (public)
+app.get("/badges", async (_req, res) => {
+  const badges = await listBadges();
   res.json({ ok: true, badges });
 });
 
@@ -543,6 +549,25 @@ io.on("connection", async (socket) => {
     // Persist match + ratings (only for authenticated users, and only for PvP)
     if (!room.isSolo && players.length >= 2) {
       const winnerUserId = winnerId ? room.players[winnerId]?.userId ?? null : null;
+
+      const grantAndNotify = async (
+        socketId: string,
+        userId: string | null | undefined,
+        badgeCode: string,
+      ) => {
+        if (!userId) return;
+        const earned = await grantBadge(userId, badgeCode);
+        if (!earned) return;
+        io.to(socketId).emit("badge:earned", {
+          code: earned.badge.code,
+          name: earned.badge.name,
+          description: earned.badge.description,
+          icon: earned.badge.icon,
+          rarity: earned.badge.rarity,
+          earnedAt: earned.createdAt,
+        });
+      };
+
       try {
         await recordMatchAndUpdateRatings({
           createdByUserId: a.userId ?? b.userId ?? null,
@@ -574,6 +599,26 @@ io.on("connection", async (socket) => {
             },
           ],
         });
+
+        // Badge awards (MVP): server-verified
+        if (winnerId && winnerUserId) {
+          const winnerSocket = room.players[winnerId]?.socketId;
+          if (winnerSocket) await grantAndNotify(winnerSocket, winnerUserId, "FIRST_WIN");
+        }
+
+        for (const p of [a, b]) {
+          // Perfect game
+          if (p.userId && p.correct >= room.totalQuestions) {
+            await grantAndNotify(p.socketId, p.userId, "PERFECT_GAME");
+          }
+          // Fast finish: finish in under 50% of time limit (and completed)
+          if (p.userId && p.finishedAt && room.startAt) {
+            const durMs = p.finishedAt - room.startAt;
+            if (durMs > 0 && durMs <= timeLimitSecForRoom(room) * 1000 * 0.5) {
+              await grantAndNotify(p.socketId, p.userId, "FAST_FINISH");
+            }
+          }
+        }
       } catch (e) {
         console.warn("[db] failed to record match", e);
       }
