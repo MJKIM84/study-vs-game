@@ -401,24 +401,24 @@ export default function App() {
 
       {toast && <div className="toast">{toast}</div>}
 
-      {/* STEP 1: Welcome / Login */}
+      {/* STEP 1: Welcome / Login (진입 단계에서만) */}
       {screen === "welcome" && (
         <section className="card" style={{ marginBottom: 12 }}>
           <div className="row between">
             <div>
               <div className="title">Study VS Game</div>
-              <div className="sub">방학용 학습 VS 게임 · step by step</div>
+              <div className="sub">아이들용 학습 대결 게임 · 로그인 또는 익명으로 시작</div>
             </div>
             {meUser ? (
               <button className="btn" onClick={logout}>
-                로그아웃
+                계정 변경
               </button>
             ) : (
               <div className="row" style={{ gap: 8 }}>
-                <button className="btn" onClick={() => setAuthMode("login")}>
+                <button className={`btn ${authMode === "login" ? "primary" : ""}`} onClick={() => setAuthMode("login")}>
                   로그인
                 </button>
-                <button className="btn" onClick={() => setAuthMode("signup")}>
+                <button className={`btn ${authMode === "signup" ? "primary" : ""}`} onClick={() => setAuthMode("signup")}>
                   회원가입
                 </button>
               </div>
@@ -460,12 +460,34 @@ export default function App() {
                   {authMode === "signup" ? "가입" : "로그인"}
                 </button>
               </div>
+              <div className="hint">(원하면 아래에서 익명으로 바로 시작 가능)</div>
             </div>
           )}
 
-          <div className="row" style={{ marginTop: 12, justifyContent: "flex-end" }}>
-            <button className="btn primary" onClick={() => setScreen("setup")}>
-              다음
+          <div className="row" style={{ marginTop: 12, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <button className="btn" onClick={() => {
+              // Proceed as guest
+              setScreen("setup");
+            }}>
+              익명으로 시작
+            </button>
+            <button
+              className="btn primary"
+              onClick={() => {
+                // Only allow proceed after login if user intended. If already logged in, OK.
+                if (!meUser && token) {
+                  setScreen("setup");
+                  return;
+                }
+                if (meUser) {
+                  setScreen("setup");
+                  return;
+                }
+                // No token/meUser yet: nudge
+                toastMsg("로그인하거나 익명으로 시작을 눌러주세요", 1800);
+              }}
+            >
+              게임 시작
             </button>
           </div>
         </section>
@@ -580,13 +602,18 @@ export default function App() {
       {screen === "menu" && (
         <section className="card">
           <div className="row between">
-            <h2 className="sectionTitle">3) 메뉴</h2>
-            <button className="btn" onClick={() => setScreen("setup")}>
-              셋업 수정
-            </button>
+            <h2 className="sectionTitle">메뉴</h2>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+              <button className="btn" onClick={() => setScreen("welcome")}>
+                계정
+              </button>
+              <button className="btn" onClick={() => setScreen("setup")}>
+                셋업
+              </button>
+            </div>
           </div>
 
-          <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
             <button className="btn primary" onClick={() => setScreen("friend")}>
               친구와 대결하기(방 코드)
             </button>
@@ -594,10 +621,9 @@ export default function App() {
               className="btn primary ghost"
               onClick={() => {
                 quickMatch();
-                // room state will move to lobby once matched
               }}
             >
-              모르는 친구와 대결하기(랜덤 매칭)
+              랜덤 매칭(모르는 친구)
             </button>
             <button
               className="btn"
@@ -618,6 +644,12 @@ export default function App() {
               혼자 연습하기
             </button>
           </div>
+
+          {!meUser && (
+            <div className="hint" style={{ marginTop: 12 }}>
+              랭킹/전적 저장은 로그인 필요 → 상단 ‘계정’에서 로그인하세요.
+            </div>
+          )}
 
           {leaderboardRows && (
             <div style={{ marginTop: 14 }}>
