@@ -18,6 +18,7 @@ model User {
   ratings Rating[]
   matches Match[] @relation("MatchCreator")
   badges UserBadge[]
+  sessions Session[]
 }
 
 model Rating {
@@ -85,4 +86,21 @@ model UserBadge {
 
   @@unique([userId, badgeId])
   @@index([userId, createdAt])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  revokedAt  DateTime?
+
+  ip        String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, lastSeenAt])
+  @@index([revokedAt])
 }

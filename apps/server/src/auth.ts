@@ -14,23 +14,44 @@ export type AuthUser = {
   nickname: string;
 };
 
-export function signToken(user: AuthUser) {
+export function signToken(user: AuthUser, opts?: { sessionId?: string }) {
   return jwt.sign(
-    { sub: user.id, username: user.username, nickname: user.nickname },
+    {
+      sub: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      sid: opts?.sessionId ?? null,
+    },
     JWT_SECRET,
     { expiresIn: "30d" },
   );
 }
 
-export async function verifyToken(token: string): Promise<AuthUser | null> {
+export async function verifyToken(token: string): Promise<(AuthUser & { sessionId: string | null }) | null> {
   try {
     const payload = jwt.verify(token, JWT_SECRET) as any;
     const userId = String(payload.sub);
+    const sessionId = payload.sid ? String(payload.sid) : null;
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, username: true, nickname: true },
     });
-    return user ?? null;
+    if (!user) return null;
+
+    // If token includes a session id, validate it's not revoked.
+    if (sessionId) {
+      const s = await prisma.session.findUnique({ where: { id: sessionId } });
+      if (!s || s.userId !== userId) return null;
+      if (s.revokedAt) return null;
+
+      // best-effort last seen update (don’t block auth)
+      prisma.session
+        .update({ where: { id: sessionId }, data: { lastSeenAt: new Date() } })
+        .catch(() => {});
+    }
+
+    return { ...user, sessionId };
   } catch {
     return null;
   }

@@ -20,7 +20,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 }
 
 export function getReqUser(req: Request) {
-  return (req as any).user as { id: string; username: string; nickname: string } | undefined;
+  return (req as any).user as { id: string; username: string; nickname: string; sessionId?: string | null } | undefined;
 }
 
 const SignupBody = z.object({
@@ -49,7 +49,15 @@ export async function postSignup(req: Request, res: Response) {
     select: { id: true, username: true, nickname: true },
   });
 
-  const token = signToken(user);
+  const session = await prisma.session.create({
+    data: {
+      userId: user.id,
+      ip: String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? ""),
+      userAgent: String(req.headers["user-agent"] ?? ""),
+    },
+  });
+
+  const token = signToken(user, { sessionId: session.id });
   res.json({ ok: true, user, token });
 }
 
@@ -67,7 +75,15 @@ export async function postLogin(req: Request, res: Response) {
   const ok = await verifyPassword(user.passwordHash, password);
   if (!ok) return res.status(401).json({ ok: false, error: "invalid_credentials" });
 
-  const token = signToken({ id: user.id, username: user.username, nickname: user.nickname });
+  const session = await prisma.session.create({
+    data: {
+      userId: user.id,
+      ip: String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? ""),
+      userAgent: String(req.headers["user-agent"] ?? ""),
+    },
+  });
+
+  const token = signToken({ id: user.id, username: user.username, nickname: user.nickname }, { sessionId: session.id });
   res.json({ ok: true, user: { id: user.id, username: user.username, nickname: user.nickname }, token });
 }
 
@@ -75,5 +91,7 @@ export async function getMe(req: Request, res: Response) {
   const token = bearerToken(req);
   if (!token) return res.status(200).json({ ok: true, user: null });
   const user = await verifyToken(token);
-  res.json({ ok: true, user });
+  if (!user) return res.json({ ok: true, user: null });
+  // do not expose sessionId in /me response
+  res.json({ ok: true, user: { id: user.id, username: user.username, nickname: user.nickname } });
 }

@@ -6,6 +6,7 @@ import { customAlphabet } from "nanoid";
 import { loadQuestionBank } from "./bankLoad.js";
 import { type Semester } from "./bankSchema.js";
 import { getMe, postLogin, postSignup, requireAuth } from "./httpAuthRoutes.js";
+import { getMySessions, postChangePassword, postLogout, postRevokeSession, postUpdateProfile } from "./sessionRoutes.js";
 import { leaderboard, recordMatchAndUpdateRatings, modeKey } from "./ratings.js";
 import { verifyToken } from "./auth.js";
 import { getMeStats } from "./meRoutes.js";
@@ -23,7 +24,13 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // Auth (JWT bearer)
 app.post("/auth/signup", postSignup);
 app.post("/auth/login", postLogin);
+app.post("/auth/logout", requireAuth, postLogout);
 app.get("/auth/me", getMe);
+app.post("/auth/profile", requireAuth, postUpdateProfile);
+app.post("/auth/password", requireAuth, postChangePassword);
+app.get("/auth/sessions", requireAuth, getMySessions);
+app.post("/auth/sessions/revoke", requireAuth, postRevokeSession);
+
 app.get("/me/stats", requireAuth, getMeStats);
 app.get("/me/matches", requireAuth, getMyMatches);
 app.get("/me/badges", requireAuth, async (req, res) => {

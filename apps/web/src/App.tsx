@@ -86,7 +86,7 @@ export default function App() {
     [token],
   );
 
-  const [screen, setScreen] = useState<"welcome" | "setup" | "menu" | "badges" | "friend" | "lobby" | "playing" | "result">("welcome");
+  const [screen, setScreen] = useState<"welcome" | "setup" | "menu" | "badges" | "account" | "friend" | "lobby" | "playing" | "result">("welcome");
   const [phase, setPhase] = useState<"home" | "lobby" | "playing" | "result">("home");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [joinCode, setJoinCode] = useState("");
@@ -119,6 +119,15 @@ export default function App() {
   const [earnedBadges, setEarnedBadges] = useState<Badge[]>([]);
   const [badgeCatalog, setBadgeCatalog] = useState<Badge[] | null>(null);
   const [myBadges, setMyBadges] = useState<Badge[] | null>(null);
+
+  // account management
+  const [sessions, setSessions] = useState<
+    Array<{ id: string; createdAt: string; lastSeenAt: string; revokedAt: string | null; ip: string | null; userAgent: string | null }>
+  >([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [newNickname, setNewNickname] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -304,6 +313,20 @@ export default function App() {
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
         .then((j) => setMyBadges(j.badges ?? []))
         .catch(() => setMyBadges(null));
+
+      fetch(`${SERVER_URL}/auth/sessions`, {
+        signal: ac.signal,
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((j) => {
+          setSessions(j.sessions ?? []);
+          setCurrentSessionId(j.currentSessionId ?? null);
+        })
+        .catch(() => {
+          setSessions([]);
+          setCurrentSessionId(null);
+        });
     }
 
     return () => ac.abort();
@@ -756,8 +779,8 @@ export default function App() {
               <button className="btn" onClick={() => setScreen("setup")}>
                 셋업
               </button>
-              <button className="btn" onClick={() => setScreen("welcome")}>
-                계정
+              <button className="btn" onClick={() => setScreen("account")}>
+                회원관리
               </button>
             </div>
           </div>
@@ -811,6 +834,168 @@ export default function App() {
                 ))}
               </ol>
             </div>
+          )}
+        </section>
+      )}
+
+      {/* Account (member management + sessions) */}
+      {screen === "account" && (
+        <section className="card">
+          <div className="row between">
+            <h2 className="sectionTitle">회원관리</h2>
+            <button className="btn" onClick={() => setScreen("menu")}>
+              메뉴로
+            </button>
+          </div>
+
+          {!token ? (
+            <div className="hint" style={{ marginTop: 10 }}>
+              로그인 후 이용할 수 있어요.
+            </div>
+          ) : (
+            <>
+              <div style={{ marginTop: 12 }}>
+                <div className="hint">프로필</div>
+                <div className="row" style={{ marginTop: 8, flexWrap: "wrap" }}>
+                  <input
+                    className="input"
+                    placeholder={meUser ? `닉네임(현재: ${meUser.nickname})` : "닉네임"}
+                    value={newNickname}
+                    onChange={(e) => setNewNickname(e.target.value)}
+                  />
+                  <button
+                    className="btn primary"
+                    onClick={async () => {
+                      if (!newNickname.trim()) return toastMsg("닉네임을 입력하세요", 1200);
+                      const r = await fetch(`${SERVER_URL}/auth/profile`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ nickname: newNickname.trim() }),
+                      });
+                      const j = await r.json();
+                      if (!r.ok || !j.ok) return toastMsg("변경 실패", 1500);
+                      setMeUser(j.user);
+                      setNewNickname("");
+                      toastMsg("닉네임 변경 완료", 1200);
+                    }}
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <div className="hint">비밀번호 변경(변경 시 모든 세션 로그아웃)</div>
+                <div className="row" style={{ marginTop: 8, flexWrap: "wrap" }}>
+                  <input
+                    className="input"
+                    placeholder="현재 비밀번호"
+                    type="password"
+                    value={currentPw}
+                    onChange={(e) => setCurrentPw(e.target.value)}
+                  />
+                  <input
+                    className="input"
+                    placeholder="새 비밀번호"
+                    type="password"
+                    value={newPw}
+                    onChange={(e) => setNewPw(e.target.value)}
+                  />
+                  <button
+                    className="btn"
+                    onClick={async () => {
+                      if (!currentPw || !newPw) return toastMsg("비밀번호를 입력하세요", 1200);
+                      const r = await fetch(`${SERVER_URL}/auth/password`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
+                      });
+                      const j = await r.json();
+                      if (!r.ok || !j.ok) return toastMsg("변경 실패", 1500);
+                      // local logout
+                      logout();
+                      toastMsg("비밀번호 변경 완료. 다시 로그인하세요", 1800);
+                    }}
+                  >
+                    변경
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <div className="hint">로그인 세션</div>
+                <div style={{ marginTop: 8, display: "grid", gap: 10 }}>
+                  {sessions.map((s) => (
+                    <div key={s.id} className="player" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 1000, wordBreak: "break-all" }}>
+                          {s.id}{" "}
+                          {currentSessionId === s.id && <span className="pill" style={{ marginLeft: 6 }}>현재</span>}
+                          {s.revokedAt && <span className="pill" style={{ marginLeft: 6 }}>종료됨</span>}
+                        </div>
+                        <div className="hint" style={{ marginTop: 4 }}>
+                          lastSeen: {new Date(s.lastSeenAt).toLocaleString()} · ip: {s.ip ?? "-"}
+                        </div>
+                        <div className="hint" style={{ marginTop: 4, wordBreak: "break-word" }}>
+                          {s.userAgent ?? ""}
+                        </div>
+                      </div>
+                      <div className="row" style={{ flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <button
+                          className="btn"
+                          disabled={!!s.revokedAt || currentSessionId === s.id}
+                          onClick={async () => {
+                            const r = await fetch(`${SERVER_URL}/auth/sessions/revoke`, {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                              },
+                              body: JSON.stringify({ sessionId: s.id }),
+                            });
+                            const j = await r.json();
+                            if (!r.ok || !j.ok) return toastMsg("종료 실패", 1500);
+                            toastMsg("세션 종료", 1200);
+                            // refresh list
+                            const rr = await fetch(`${SERVER_URL}/auth/sessions`, {
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            const jj = await rr.json();
+                            setSessions(jj.sessions ?? []);
+                            setCurrentSessionId(jj.currentSessionId ?? null);
+                          }}
+                        >
+                          종료
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="row" style={{ marginTop: 12, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                  <button
+                    className="btn"
+                    onClick={async () => {
+                      const r = await fetch(`${SERVER_URL}/auth/logout`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
+                      const j = await r.json();
+                      if (!r.ok || !j.ok) return toastMsg("로그아웃 실패", 1500);
+                      logout();
+                    }}
+                  >
+                    이 기기 로그아웃
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </section>
       )}
