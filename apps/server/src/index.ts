@@ -5,9 +5,10 @@ import { Server } from "socket.io";
 import { customAlphabet } from "nanoid";
 import { loadQuestionBank } from "./bankLoad.js";
 import { type Semester } from "./bankSchema.js";
-import { getMe, postLogin, postSignup, requireAuth, getReqUser } from "./httpAuthRoutes.js";
+import { getMe, postLogin, postSignup, requireAuth } from "./httpAuthRoutes.js";
 import { leaderboard, recordMatchAndUpdateRatings, modeKey } from "./ratings.js";
 import { verifyToken } from "./auth.js";
+import { getMeStats } from "./meRoutes.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -21,6 +22,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 app.post("/auth/signup", postSignup);
 app.post("/auth/login", postLogin);
 app.get("/auth/me", getMe);
+app.get("/me/stats", requireAuth, getMeStats);
 
 // Leaderboard
 app.get("/leaderboard", async (req, res) => {

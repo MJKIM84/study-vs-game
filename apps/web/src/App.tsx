@@ -38,6 +38,28 @@ type Question = { id: string; prompt: string };
 
 type User = { id: string; username: string; nickname: string };
 
+type RatingRow = {
+  modeKey: string;
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+};
+
+type LeaderboardRow = {
+  user: User;
+  wins: number;
+  losses: number;
+  gamesPlayed: number;
+};
+
+type MeStats = {
+  ok: true;
+  user: User;
+  modeKey: string | null;
+  totals: { gamesPlayed: number; wins: number; losses: number };
+  ratings: RatingRow[];
+};
+
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:5174";
 
 export default function App() {
@@ -62,6 +84,9 @@ export default function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
+
+  const [meStats, setMeStats] = useState<MeStats | null>(null);
+  const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[] | null>(null);
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -166,6 +191,45 @@ export default function App() {
 
     return () => ac.abort();
   }, [grade, subject, semester]);
+
+  // Fetch leaderboard for current mode (read-only)
+  useEffect(() => {
+    const ac = new AbortController();
+    const url = new URL(`${SERVER_URL}/leaderboard`);
+    url.searchParams.set("grade", String(grade));
+    url.searchParams.set("subject", subject);
+    url.searchParams.set("semester", String(semester));
+    url.searchParams.set("totalQuestions", String(totalQuestions));
+
+    fetch(url.toString(), { signal: ac.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j) => setLeaderboardRows(j.rows ?? []))
+      .catch(() => setLeaderboardRows(null));
+
+    return () => ac.abort();
+  }, [grade, subject, semester, totalQuestions]);
+
+  // Fetch my stats for current mode (only after result)
+  useEffect(() => {
+    if (!token) {
+      setMeStats(null);
+      return;
+    }
+    if (phase !== "result") return;
+
+    const mk = `${subject}:g${grade}:sem${semester}:q${totalQuestions}`;
+    const ac = new AbortController();
+
+    fetch(`${SERVER_URL}/me/stats?modeKey=${encodeURIComponent(mk)}`, {
+      signal: ac.signal,
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((j: MeStats) => setMeStats(j))
+      .catch(() => setMeStats(null));
+
+    return () => ac.abort();
+  }, [token, phase, grade, subject, semester, totalQuestions]);
 
   // overall timer: starts when countdown ends
   useEffect(() => {
@@ -422,6 +486,19 @@ export default function App() {
             />
           </div>
 
+          {leaderboardRows && (
+            <div style={{ marginTop: 12 }}>
+              <div className="hint">리더보드(현재 설정 모드)</div>
+              <ol className="mono" style={{ marginTop: 6 }}>
+                {leaderboardRows.slice(0, 10).map((r, idx) => (
+                  <li key={r.user.id}>
+                    #{idx + 1} {r.user.nickname} — {r.wins}W/{r.losses}L ({r.gamesPlayed})
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
           {bankMeta && bankMeta.units.length > 0 && (
             <div style={{ marginTop: 10 }}>
               <div className="hint">체크해서 제외(unitCode):</div>
@@ -597,6 +674,29 @@ export default function App() {
               <div className="result">
                 승자: <b>{room.players.find((p) => p.id === winnerId)?.name ?? "(알 수 없음)"}</b>
               </div>
+
+              {meUser && meStats?.ok && (
+                <div className="row" style={{ marginTop: 10, flexWrap: "wrap" }}>
+                  <div className="pill">
+                    내 전적(이 모드): <b>{meStats.totals.wins}</b>승 <b>{meStats.totals.losses}</b>패 ·
+                    <b> {meStats.totals.gamesPlayed}</b>게임
+                  </div>
+                </div>
+              )}
+
+              {leaderboardRows && leaderboardRows.length > 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <div className="hint">리더보드(현재 설정 모드)</div>
+                  <ol className="mono" style={{ marginTop: 6 }}>
+                    {leaderboardRows.slice(0, 10).map((r, idx) => (
+                      <li key={r.user.id}>
+                        #{idx + 1} {r.user.nickname} — {r.wins}W/{r.losses}L ({r.gamesPlayed})
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
               <button
                 className="btn primary"
                 onClick={() => {
