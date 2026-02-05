@@ -108,6 +108,8 @@ type Room = {
   code: string;
   players: Record<string, Player>;
   started: boolean;
+  finished: boolean;
+  isSolo: boolean;
   totalQuestions: number;
   grade: Grade;
   subject: Subject;
@@ -209,6 +211,8 @@ function getOrCreateRoom(code?: string): Room {
     code: newCode,
     players: {},
     started: false,
+    finished: false,
+    isSolo: false,
     totalQuestions: 10,
     grade: 1,
     subject: "math",
@@ -233,6 +237,8 @@ function roomState(room: Room) {
     code: room.code,
     players,
     started: room.started,
+    finished: room.finished,
+    isSolo: room.isSolo,
     totalQuestions: room.totalQuestions,
     grade: room.grade,
     subject: room.subject,
@@ -263,12 +269,14 @@ io.on("connection", async (socket) => {
         subject,
         semester,
         excludeUnitCodes,
+        solo,
       }: {
         totalQuestions?: number;
         grade?: Grade;
         subject?: Subject;
         semester?: Semester | "all";
         excludeUnitCodes?: string[];
+        solo?: boolean;
       } = {},
     ) => {
       // Leaving matchmaking queue if any
@@ -280,6 +288,8 @@ io.on("connection", async (socket) => {
       room.subject = subject ?? room.subject;
       room.semester = semester ?? room.semester;
       room.excludeUnitCodes = excludeUnitCodes ?? room.excludeUnitCodes;
+      room.isSolo = Boolean(solo);
+      room.finished = false;
 
       room.players[playerId] = {
         id: playerId,
@@ -323,6 +333,8 @@ io.on("connection", async (socket) => {
       correct: 0,
       index: 0,
     };
+    // If someone joins, it's no longer a solo practice room.
+    room.isSolo = false;
     socket.join(room.code);
     io.to(room.code).emit("room:state", roomState(room));
   });
@@ -381,6 +393,8 @@ io.on("connection", async (socket) => {
         room.grade = g;
         room.subject = s;
         room.semester = sem;
+        room.isSolo = false;
+        room.finished = false;
 
         // Exclude union (safer: avoid giving either player unlearned units)
         room.excludeUnitCodes = Array.from(new Set([...(a.excludeUnitCodes ?? []), ...(b.excludeUnitCodes ?? [])]));
@@ -437,9 +451,13 @@ io.on("connection", async (socket) => {
     p.ready = ready;
 
     const players = Object.values(room.players);
-    const allReady = players.length === 2 && players.every((x) => x.ready);
-    if (allReady && !room.started) {
+    const readyToStart =
+      (!room.isSolo && players.length === 2 && players.every((x) => x.ready)) ||
+      (room.isSolo && players.length === 1 && players.every((x) => x.ready));
+
+    if (readyToStart && !room.started && !room.finished) {
       room.started = true;
+      room.finished = false;
       room.seed = Math.floor(Math.random() * 2 ** 31);
       room.questions = generateQuestions({
         grade: room.grade,
@@ -459,7 +477,7 @@ io.on("connection", async (socket) => {
       io.to(room.code).emit("game:questions", {
         seed: room.seed,
         questions: publicQuestions,
-        timeLimitSec: room.totalQuestions === 10 ? 60 : 120,
+        timeLimitSec: timeLimitSecForRoom(room),
       });
       io.to(room.code).emit("room:state", roomState(room));
     } else {
@@ -467,69 +485,94 @@ io.on("connection", async (socket) => {
     }
   });
 
-  async function finishGame(room: Room, reason: "completed" | "timeout") {
-    const players = Object.values(room.players);
-    if (players.length < 2) return;
+  function timeLimitSecForRoom(room: Room) {
+    return room.totalQuestions === 10 ? 60 : 120;
+  }
 
-    // Rule (Claude 추천): correct 우선 → 동점이면 lastSubmitAt 빠른 쪽
+  async function finishGame(
+    room: Room,
+    reason: "completed" | "timeout" | "disconnect",
+    winnerIdOverride?: string | null,
+  ) {
+    if (room.finished) return;
+
+    const players = Object.values(room.players);
+    if (!room.isSolo && players.length < 2) return;
+    if (room.isSolo && players.length < 1) return;
+
     const a = players[0];
     const b = players[1];
 
-    let winnerId: string | null = null;
-    if (a.correct !== b.correct) winnerId = a.correct > b.correct ? a.id : b.id;
-    else {
-      const at = a.lastSubmitAt ?? Infinity;
-      const bt = b.lastSubmitAt ?? Infinity;
-      if (at !== bt) winnerId = at < bt ? a.id : b.id;
-      else winnerId = null;
+    let winnerId: string | null = winnerIdOverride ?? null;
+
+    if (!room.isSolo && !winnerId) {
+      // Rule: correct 우선 → 동점이면 lastSubmitAt 빠른 쪽
+      if (a.correct !== b.correct) winnerId = a.correct > b.correct ? a.id : b.id;
+      else {
+        const at = a.lastSubmitAt ?? Infinity;
+        const bt = b.lastSubmitAt ?? Infinity;
+        if (at !== bt) winnerId = at < bt ? a.id : b.id;
+        else winnerId = null;
+      }
     }
 
     io.to(room.code).emit("game:finish", {
       winnerId,
       reason,
       scores: {
-        [a.id]: { correct: a.correct, finishedAt: a.finishedAt ?? null, lastSubmitAt: a.lastSubmitAt ?? null },
-        [b.id]: { correct: b.correct, finishedAt: b.finishedAt ?? null, lastSubmitAt: b.lastSubmitAt ?? null },
+        ...(a
+          ? {
+              [a.id]: { correct: a.correct, finishedAt: a.finishedAt ?? null, lastSubmitAt: a.lastSubmitAt ?? null },
+            }
+          : {}),
+        ...(b
+          ? {
+              [b.id]: { correct: b.correct, finishedAt: b.finishedAt ?? null, lastSubmitAt: b.lastSubmitAt ?? null },
+            }
+          : {}),
       },
     });
 
-    // Persist match + ratings (only for authenticated users)
-    const winnerUserId = winnerId ? room.players[winnerId]?.userId ?? null : null;
-    try {
-      await recordMatchAndUpdateRatings({
-        createdByUserId: a.userId ?? b.userId ?? null,
-        grade: room.grade,
-        subject: room.subject,
-        semester: String(room.semester),
-        totalQuestions: room.totalQuestions,
-        seed: room.seed ?? null,
-        reason,
-        winnerUserId,
-        players: [
-          {
-            socketId: a.socketId,
-            userId: a.userId ?? null,
-            username: a.username ?? null,
-            nickname: a.nickname ?? null,
-            correct: a.correct,
-            lastSubmitAt: a.lastSubmitAt ?? null,
-            finishedAt: a.finishedAt ?? null,
-          },
-          {
-            socketId: b.socketId,
-            userId: b.userId ?? null,
-            username: b.username ?? null,
-            nickname: b.nickname ?? null,
-            correct: b.correct,
-            lastSubmitAt: b.lastSubmitAt ?? null,
-            finishedAt: b.finishedAt ?? null,
-          },
-        ],
-      });
-    } catch (e) {
-      console.warn("[db] failed to record match", e);
+    // Persist match + ratings (only for authenticated users, and only for PvP)
+    if (!room.isSolo && players.length >= 2) {
+      const winnerUserId = winnerId ? room.players[winnerId]?.userId ?? null : null;
+      try {
+        await recordMatchAndUpdateRatings({
+          createdByUserId: a.userId ?? b.userId ?? null,
+          grade: room.grade,
+          subject: room.subject,
+          semester: String(room.semester),
+          totalQuestions: room.totalQuestions,
+          seed: room.seed ?? null,
+          reason,
+          winnerUserId,
+          players: [
+            {
+              socketId: a.socketId,
+              userId: a.userId ?? null,
+              username: a.username ?? null,
+              nickname: a.nickname ?? null,
+              correct: a.correct,
+              lastSubmitAt: a.lastSubmitAt ?? null,
+              finishedAt: a.finishedAt ?? null,
+            },
+            {
+              socketId: b.socketId,
+              userId: b.userId ?? null,
+              username: b.username ?? null,
+              nickname: b.nickname ?? null,
+              correct: b.correct,
+              lastSubmitAt: b.lastSubmitAt ?? null,
+              finishedAt: b.finishedAt ?? null,
+            },
+          ],
+        });
+      } catch (e) {
+        console.warn("[db] failed to record match", e);
+      }
     }
 
+    room.finished = true;
     room.started = false;
     room.startAt = undefined;
     room.seed = undefined;
@@ -548,37 +591,61 @@ io.on("connection", async (socket) => {
     "game:submit",
     ({ code, qi, answer }: { code: string; qi: number; answer: string }) => {
       const room = rooms.get(code);
-      if (!room || !room.started) return;
+      if (!room || !room.started || room.finished) return;
       const p = room.players[playerId];
       if (!p) return;
       if (!room.questions) return;
+      if (!room.startAt) return;
+
+      const now = Date.now();
+
+      // Don't accept answers before countdown ends.
+      if (now < room.startAt) return;
+
+      // Server-side timeout safety.
+      const endAt = room.startAt + timeLimitSecForRoom(room) * 1000;
+      if (now >= endAt) {
+        void finishGame(room, "timeout");
+        return;
+      }
 
       const q = room.questions[qi];
       if (!q) return;
       if (qi !== p.index) return; // basic anti-desync
 
-      const submittedAt = Date.now();
-      p.lastSubmitAt = submittedAt;
+      // Simple anti-spam
+      if (p.lastSubmitAt && now - p.lastSubmitAt < 120) return;
 
-      const normalized = String(answer ?? "").trim();
+      p.lastSubmitAt = now;
+
+      const normalized = String(answer ?? "").trim().slice(0, 64);
       const expected = String(q.answer).trim();
-      const correct = room.subject === "english" ? normalized.toLowerCase() === expected.toLowerCase() : normalized === expected;
+      const correct =
+        room.subject === "english"
+          ? normalized.toLowerCase() === expected.toLowerCase()
+          : normalized === expected;
 
       if (correct) p.correct += 1;
       p.index = Math.min(p.index + 1, room.totalQuestions);
-      if (p.index >= room.totalQuestions) p.finishedAt = submittedAt;
+      if (p.index >= room.totalQuestions) p.finishedAt = now;
+
+      // Send instant feedback to the submitter only (UX)
+      socket.emit("game:answer", { qi, correct });
 
       io.to(room.code).emit("room:state", roomState(room));
 
       const players = Object.values(room.players);
-      const allDone = players.length === 2 && players.every((pl) => pl.index >= room.totalQuestions);
+      const allDone = room.isSolo
+        ? players.length === 1 && players.every((pl) => pl.index >= room.totalQuestions)
+        : players.length === 2 && players.every((pl) => pl.index >= room.totalQuestions);
+
       if (allDone) void finishGame(room, "completed");
     },
   );
 
   socket.on("game:timeout", ({ code }: { code: string }) => {
     const room = rooms.get(code);
-    if (!room || !room.started) return;
+    if (!room || !room.started || room.finished) return;
     void finishGame(room, "timeout");
   });
 
@@ -588,11 +655,22 @@ io.on("connection", async (socket) => {
 
     // remove player from any room
     for (const room of rooms.values()) {
-      if (room.players[playerId]) {
-        delete room.players[playerId];
-        io.to(room.code).emit("room:state", roomState(room));
-        if (Object.keys(room.players).length === 0) rooms.delete(room.code);
+      if (!room.players[playerId]) continue;
+
+      const wasInGame = room.started && !room.finished;
+      delete room.players[playerId];
+
+      // If PvP and someone disconnects mid-game, remaining player wins by default.
+      if (wasInGame && !room.isSolo) {
+        const remaining = Object.values(room.players);
+        if (remaining.length === 1) {
+          void finishGame(room, "disconnect", remaining[0].id);
+          continue;
+        }
       }
+
+      io.to(room.code).emit("room:state", roomState(room));
+      if (Object.keys(room.players).length === 0) rooms.delete(room.code);
     }
   });
 });

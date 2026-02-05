@@ -18,6 +18,8 @@ type RoomState = {
   code: string;
   players: RoomPlayer[];
   started: boolean;
+  finished: boolean;
+  isSolo: boolean;
   totalQuestions: number;
   grade: Grade;
   subject: Subject;
@@ -79,6 +81,11 @@ export default function App() {
   const [joinCode, setJoinCode] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
+  const toastMsg = (msg: string, ms = 2000) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), ms);
+  };
+
   // auth UI state
   const [meUser, setMeUser] = useState<User | null>(null);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
@@ -125,6 +132,12 @@ export default function App() {
       const next = state.started ? "playing" : "lobby";
       setPhase(next);
       setScreen(next);
+
+      // Solo practice: auto-ready when alone.
+      if (state.isSolo && !state.started && state.players.length === 1) {
+        setReady(true);
+        socket.emit("player:ready", { code: state.code, ready: true });
+      }
     });
 
     socket.on("game:countdown", ({ startAt }: { startAt: number }) => {
@@ -150,6 +163,11 @@ export default function App() {
         timeoutSentRef.current = false;
       },
     );
+
+    socket.on("game:answer", ({ correct }: { qi: number; correct: boolean }) => {
+      // Lightweight feedback (MVP)
+      toastMsg(correct ? "정답" : "오답", 700);
+    });
 
     socket.on("queue:matched", ({ code }: { code: string }) => {
       setJoinCode(code);
@@ -331,10 +349,7 @@ export default function App() {
     setAnswer("");
   }
 
-  function toastMsg(msg: string, ms = 2000) {
-    setToast(msg);
-    setTimeout(() => setToast(null), ms);
-  }
+  // toastMsg moved above (lint: avoid access before declaration)
 
   async function submitAuth() {
     try {
@@ -584,7 +599,21 @@ export default function App() {
             >
               모르는 친구와 대결하기(랜덤 매칭)
             </button>
-            <button className="btn" onClick={() => toastMsg("혼자 연습하기는 다음 작업에서 붙입니다(준비중)")}
+            <button
+              className="btn"
+              onClick={() => {
+                socket.emit("room:create", {
+                  totalQuestions,
+                  grade,
+                  subject,
+                  semester,
+                  excludeUnitCodes: parseExcludeUnitCodes(),
+                  solo: true,
+                });
+                setPhase("lobby");
+                setScreen("lobby");
+                toastMsg("연습방 생성 중...", 1200);
+              }}
             >
               혼자 연습하기
             </button>
@@ -848,9 +877,15 @@ export default function App() {
                   setReady(next);
                   socket.emit("player:ready", { code: room.code, ready: next });
                 }}
-                disabled={room.players.length < 2}
+                disabled={!room.isSolo && room.players.length < 2}
               >
-                {room.players.length < 2 ? "상대 기다리는 중..." : ready ? "준비 취소" : "준비"}
+                {!room.isSolo && room.players.length < 2
+                  ? "상대 기다리는 중..."
+                  : room.isSolo
+                    ? "연습 시작"
+                    : ready
+                      ? "준비 취소"
+                      : "준비"}
               </button>
               <button className="btn" onClick={() => window.location.reload()}>
                 나가기(리로드)
@@ -906,14 +941,23 @@ export default function App() {
           {phase === "result" && (
             <div style={{ marginTop: 12 }}>
               <div className="result">
-                결과: {winnerId ? (
-                  <b>{room.players.find((p) => p.id === winnerId)?.name ?? "(알 수 없음)"} 승</b>
+                {room.isSolo ? (
+                  <>
+                    결과: <b>연습 완료</b>
+                  </>
                 ) : (
-                  <b>무승부</b>
+                  <>
+                    결과:{" "}
+                    {winnerId ? (
+                      <b>{room.players.find((p) => p.id === winnerId)?.name ?? "(알 수 없음)"} 승</b>
+                    ) : (
+                      <b>무승부</b>
+                    )}
+                  </>
                 )}
               </div>
 
-              {meUser && meStats?.ok && (
+              {!room.isSolo && meUser && meStats?.ok && (
                 <div className="row" style={{ marginTop: 10, flexWrap: "wrap" }}>
                   <div className="pill">
                     내 전적(이 모드): <b>{meStats.totals.wins}</b>승 <b>{meStats.totals.losses}</b>패 ·
@@ -922,7 +966,7 @@ export default function App() {
                 </div>
               )}
 
-              {leaderboardRows && leaderboardRows.length > 0 && (
+              {!room.isSolo && leaderboardRows && leaderboardRows.length > 0 && (
                 <div style={{ marginTop: 10 }}>
                   <div className="hint">리더보드(현재 설정 모드)</div>
                   <ol className="mono" style={{ marginTop: 6 }}>
