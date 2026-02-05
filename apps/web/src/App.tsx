@@ -215,10 +215,7 @@ export default function App() {
 
   // Fetch my stats for current mode (only after result)
   useEffect(() => {
-    if (!token) {
-      setMeStats(null);
-      return;
-    }
+    if (!token) return;
     if (phase !== "result") return;
 
     const mk = `${subject}:g${grade}:sem${semester}:q${totalQuestions}`;
@@ -234,7 +231,6 @@ export default function App() {
 
     return () => ac.abort();
   }, [token, phase, grade, subject, semester, totalQuestions]);
-
 
   // overall timer: starts when countdown ends
   useEffect(() => {
@@ -263,7 +259,7 @@ export default function App() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [room?.code, room?.startAt, phase, countdownMs, timeLimitSec, socket]);
+  }, [room, room?.code, room?.startAt, phase, countdownMs, timeLimitSec, socket]);
 
   const meId = socket.id;
   const me = room?.players.find((p) => p.id === meId);
@@ -343,7 +339,7 @@ export default function App() {
   async function submitAuth() {
     try {
       const endpoint = authMode === "signup" ? "/auth/signup" : "/auth/login";
-      const body: any = { username, password };
+      const body: { username: string; password: string; nickname?: string } = { username, password };
       if (authMode === "signup") body.nickname = nickname || username;
 
       const r = await fetch(`${SERVER_URL}${endpoint}`, {
