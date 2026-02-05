@@ -10,6 +10,7 @@ import { leaderboard, recordMatchAndUpdateRatings, modeKey } from "./ratings.js"
 import { verifyToken } from "./auth.js";
 import { getMeStats } from "./meRoutes.js";
 import { getMyMatches } from "./matchRoutes.js";
+import { listMyBadges, seedBadges } from "./badges.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
@@ -25,6 +26,12 @@ app.post("/auth/login", postLogin);
 app.get("/auth/me", getMe);
 app.get("/me/stats", requireAuth, getMeStats);
 app.get("/me/matches", requireAuth, getMyMatches);
+app.get("/me/badges", requireAuth, async (req, res) => {
+  const u = (req as any).user as { id: string } | undefined;
+  if (!u?.id) return res.status(401).json({ ok: false, error: "unauthorized" });
+  const badges = await listMyBadges(u.id);
+  res.json({ ok: true, badges });
+});
 
 // Leaderboard
 app.get("/leaderboard", async (req, res) => {
@@ -675,7 +682,12 @@ io.on("connection", async (socket) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
+  try {
+    await seedBadges();
+  } catch (e) {
+    console.warn("[badges] seed failed", e);
+  }
   console.log(`[server] listening on http://localhost:${PORT}`);
   console.log(`[server] allowed origin: ${CLIENT_ORIGIN}`);
 });
