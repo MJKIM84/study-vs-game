@@ -462,7 +462,7 @@ export default function App() {
 
       {phase === "home" && (
         <section className="card">
-          <h2>게임 설정</h2>
+          <h2 className="sectionTitle">게임 설정</h2>
 
           <div className="row" style={{ marginTop: 10, flexWrap: "wrap" }}>
             <div className="pill">

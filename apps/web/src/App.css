@@ -1,7 +1,9 @@
 :root {
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   color: #0f172a;
-  background: #f8fafc;
+  background: radial-gradient(1200px 700px at 20% 10%, #dbeafe 0%, rgba(219,234,254,0) 60%),
+    radial-gradient(1200px 700px at 80% 20%, #dcfce7 0%, rgba(220,252,231,0) 55%),
+    #f8fafc;
 }
 
 .container {
@@ -29,11 +31,19 @@
 }
 
 .card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: -0.01em;
 }
 
 .row {
@@ -48,16 +58,30 @@
 
 .btn {
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #cbd5e1;
   background: #ffffff;
   cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+  border-color: #94a3b8;
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 
 .btn.primary {
-  background: #2563eb;
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
   color: white;
-  border-color: #2563eb;
+  border-color: #1d4ed8;
+}
+
+.btn.primary:hover {
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.25);
 }
 
 .btn.primary.ghost {
@@ -74,8 +98,15 @@
 .input {
   flex: 1;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #cbd5e1;
+  outline: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
 }
 
 .select {
