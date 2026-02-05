@@ -557,7 +557,9 @@ export default function App() {
 
       <header className="header">
         <div>
-          <div className="title">Study VS Game</div>
+          <div className="title">
+            <span className="logoSticker">📚⚔️</span> Study VS Game
+          </div>
           <div className="sub">키즈 대결 게임 · 빠르게 풀고 이겨라!</div>
         </div>
         <div className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -785,7 +787,7 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="menuButtons">
             <button className="btn primary" onClick={() => setScreen("friend")}>
               친구와 대결하기(방 코드)
             </button>
@@ -1378,7 +1380,7 @@ export default function App() {
               )}
 
               {timeLeftMs !== null && (
-                <div className="row" style={{ marginTop: 10 }}>
+                <div className="hudRow row" style={{ marginTop: 10 }}>
                   <div className="pill">
                     남은 시간: <b>{Math.max(0, Math.ceil(timeLeftMs / 1000))}</b>s
                   </div>
