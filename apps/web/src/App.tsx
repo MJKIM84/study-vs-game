@@ -73,6 +73,7 @@ export default function App() {
     [token],
   );
 
+  const [screen, setScreen] = useState<"welcome" | "setup" | "menu" | "friend" | "lobby" | "playing" | "result">("welcome");
   const [phase, setPhase] = useState<"home" | "lobby" | "playing" | "result">("home");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [joinCode, setJoinCode] = useState("");
@@ -87,7 +88,6 @@ export default function App() {
 
   const [meStats, setMeStats] = useState<MeStats | null>(null);
   const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[] | null>(null);
-  const [myMatches, setMyMatches] = useState<any[] | null>(null);
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -122,7 +122,9 @@ export default function App() {
 
     socket.on("room:state", (state: RoomState) => {
       setRoom(state);
-      setPhase(state.started ? "playing" : "lobby");
+      const next = state.started ? "playing" : "lobby";
+      setPhase(next);
+      setScreen(next);
     });
 
     socket.on("game:countdown", ({ startAt }: { startAt: number }) => {
@@ -158,6 +160,7 @@ export default function App() {
     socket.on("game:finish", ({ winnerId }: { winnerId: string | null }) => {
       setWinnerId(winnerId);
       setPhase("result");
+      setScreen("result");
       setReady(false);
       setTimeLeftMs(null);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -232,24 +235,6 @@ export default function App() {
     return () => ac.abort();
   }, [token, phase, grade, subject, semester, totalQuestions]);
 
-  // Fetch my recent matches (after login)
-  useEffect(() => {
-    if (!token) {
-      setMyMatches(null);
-      return;
-    }
-    const ac = new AbortController();
-
-    fetch(`${SERVER_URL}/me/matches?limit=10`, {
-      signal: ac.signal,
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((j) => setMyMatches(j.rows ?? []))
-      .catch(() => setMyMatches(null));
-
-    return () => ac.abort();
-  }, [token]);
 
   // overall timer: starts when countdown ends
   useEffect(() => {
@@ -315,6 +300,15 @@ export default function App() {
       excludeUnitCodes: parseExcludeUnitCodes(),
     });
     setPhase("lobby");
+    setScreen("lobby");
+  }
+
+  function joinRoomByCode() {
+    const code = joinCode.trim().toUpperCase();
+    if (!code) return toastMsg("방 코드를 입력하세요");
+    socket.emit("room:join", { code });
+    setPhase("lobby");
+    setScreen("lobby");
   }
 
   function quickMatch() {
@@ -325,8 +319,7 @@ export default function App() {
       semester,
       excludeUnitCodes: parseExcludeUnitCodes(),
     });
-    setToast("매칭 대기중...");
-    setTimeout(() => setToast(null), 2000);
+    toastMsg("매칭 대기중...", 2000);
   }
 
   function submitAnswer() {
@@ -342,6 +335,11 @@ export default function App() {
     setAnswer("");
   }
 
+  function toastMsg(msg: string, ms = 2000) {
+    setToast(msg);
+    setTimeout(() => setToast(null), ms);
+  }
+
   async function submitAuth() {
     try {
       const endpoint = authMode === "signup" ? "/auth/signup" : "/auth/login";
@@ -355,8 +353,7 @@ export default function App() {
       });
       const j = await r.json();
       if (!r.ok || !j.ok) {
-        setToast(`인증 실패: ${j.error ?? r.status}`);
-        setTimeout(() => setToast(null), 2500);
+        toastMsg(`인증 실패: ${j.error ?? r.status}`, 2500);
         return;
       }
 
@@ -364,11 +361,12 @@ export default function App() {
       setToken(j.token);
       setMeUser(j.user);
       setPassword("");
-      setToast("로그인 완료");
-      setTimeout(() => setToast(null), 1500);
+      toastMsg("로그인 완료", 1500);
+
+      // if first time, move to setup step
+      if (screen === "welcome") setScreen("setup");
     } catch {
-      setToast("인증 실패");
-      setTimeout(() => setToast(null), 2500);
+      toastMsg("인증 실패", 2500);
     }
   }
 
@@ -376,8 +374,8 @@ export default function App() {
     localStorage.removeItem("svg_token");
     setToken("");
     setMeUser(null);
-    setToast("로그아웃");
-    setTimeout(() => setToast(null), 1500);
+    setScreen("welcome");
+    toastMsg("로그아웃", 1500);
   }
 
   return (
@@ -390,79 +388,277 @@ export default function App() {
         <div className="pill">server: {SERVER_URL}</div>
       </header>
 
-      <section className="card" style={{ marginBottom: 12 }}>
-        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <strong>계정</strong>: {meUser ? `${meUser.nickname} (@${meUser.username})` : "익명"}
-          </div>
-          <div className="row" style={{ gap: 8 }}>
+      {toast && <div className="toast">{toast}</div>}
+
+      {/* STEP 1: Welcome / Login */}
+      {screen === "welcome" && (
+        <section className="card" style={{ marginBottom: 12 }}>
+          <div className="row between">
+            <div>
+              <div className="title">Study VS Game</div>
+              <div className="sub">방학용 학습 VS 게임 · step by step</div>
+            </div>
             {meUser ? (
               <button className="btn" onClick={logout}>
                 로그아웃
               </button>
             ) : (
-              <>
+              <div className="row" style={{ gap: 8 }}>
                 <button className="btn" onClick={() => setAuthMode("login")}>
                   로그인
                 </button>
                 <button className="btn" onClick={() => setAuthMode("signup")}>
                   회원가입
                 </button>
-              </>
+              </div>
             )}
           </div>
-        </div>
 
-        {meUser && myMatches && (
           <div style={{ marginTop: 10 }}>
-            <div className="hint">최근 경기(내가 만든 방 기준, MVP)</div>
-            <ol className="mono" style={{ marginTop: 6 }}>
-              {myMatches.slice(0, 10).map((m: any) => (
-                <li key={m.id}>
-                  {new Date(m.createdAt).toLocaleString()} — {m.modeKey} — winner: {m.winnerUserId ?? "draw/anon"}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-
-        {!meUser && (
-          <div style={{ marginTop: 10 }}>
-            <div className="row" style={{ flexWrap: "wrap" }}>
-              <input
-                className="input"
-                placeholder="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-              <input
-                className="input"
-                placeholder="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              {authMode === "signup" && (
-                <input
-                  className="input"
-                  placeholder="nickname"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                />
-              )}
-              <button className="btn primary" onClick={submitAuth}>
-                {authMode === "signup" ? "가입" : "로그인"}
-              </button>
+            <div className="pill">
+              계정: {meUser ? `${meUser.nickname} (@${meUser.username})` : "익명(로그인하면 랭킹/전적 저장)"}
             </div>
           </div>
-        )}
-      </section>
 
-      {toast && <div className="toast">{toast}</div>}
+          {!meUser && (
+            <div style={{ marginTop: 12 }}>
+              <div className="hint">{authMode === "signup" ? "회원가입" : "로그인"}</div>
+              <div className="row" style={{ marginTop: 8, flexWrap: "wrap" }}>
+                <input
+                  className="input"
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <input
+                  className="input"
+                  placeholder="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                {authMode === "signup" && (
+                  <input
+                    className="input"
+                    placeholder="nickname"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                  />
+                )}
+                <button className="btn primary" onClick={submitAuth}>
+                  {authMode === "signup" ? "가입" : "로그인"}
+                </button>
+              </div>
+            </div>
+          )}
 
-      {phase === "home" && (
+          <div className="row" style={{ marginTop: 12, justifyContent: "flex-end" }}>
+            <button className="btn primary" onClick={() => setScreen("setup")}>
+              다음
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* STEP 2: Setup */}
+      {screen === "setup" && (
         <section className="card">
-          <h2 className="sectionTitle">게임 설정</h2>
+          <div className="row between">
+            <h2 className="sectionTitle">2) 셋업</h2>
+            <button className="btn" onClick={() => setScreen("welcome")}>
+              뒤로
+            </button>
+          </div>
+
+          <div className="row" style={{ marginTop: 10, flexWrap: "wrap" }}>
+            <div className="pill">
+              학년:
+              <select
+                className="select"
+                value={grade}
+                onChange={(e) => setGrade(Number(e.target.value) as Grade)}
+              >
+                <option value={1}>1학년</option>
+                <option value={2}>2학년</option>
+                <option value={3}>3학년</option>
+                <option value={4}>4학년</option>
+                <option value={5}>5학년</option>
+                <option value={6}>6학년</option>
+              </select>
+            </div>
+
+            <div className="pill">
+              과목:
+              <select
+                className="select"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value as Subject)}
+              >
+                <option value="math">수학</option>
+                <option value="english">영어</option>
+              </select>
+            </div>
+
+            <div className="pill">
+              문제 수:
+              <select
+                className="select"
+                value={totalQuestions}
+                onChange={(e) => setTotalQuestions(Number(e.target.value) as 10 | 20)}
+              >
+                <option value={10}>10문제</option>
+                <option value={20}>20문제</option>
+              </select>
+            </div>
+
+            <div className="pill">
+              학기:
+              <select
+                className="select"
+                value={semester}
+                onChange={(e) => setSemester((e.target.value as unknown) as Semester)}
+              >
+                <option value="all">전체</option>
+                <option value={1}>1학기</option>
+                <option value={2}>2학기</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+            <input
+              className="input"
+              value={excludeUnitCodesText}
+              onChange={(e) => setExcludeUnitCodesText(e.target.value)}
+              placeholder="제외 unitCode(쉼표로 구분) 예: M1-1-01,E2-2-01"
+            />
+          </div>
+
+          {bankMeta && bankMeta.units.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div className="hint">제외 unitCode (체크)</div>
+              <div className="row" style={{ flexWrap: "wrap", marginTop: 8 }}>
+                {bankMeta.units.slice(0, 20).map((u) => {
+                  const checked = parseExcludeUnitCodes().includes(u.unitCode);
+                  return (
+                    <label key={u.unitCode} className="pill" style={{ cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleExclude(u.unitCode)}
+                        style={{ marginRight: 6 }}
+                      />
+                      {u.unitCode} ({u.count})
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="hint">(MVP: 상위 20개만 표시)</div>
+            </div>
+          )}
+
+          <div className="row" style={{ marginTop: 12, justifyContent: "flex-end" }}>
+            <button className="btn primary" onClick={() => setScreen("menu")}>
+              셋업 완료
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* STEP 3: Menu */}
+      {screen === "menu" && (
+        <section className="card">
+          <div className="row between">
+            <h2 className="sectionTitle">3) 메뉴</h2>
+            <button className="btn" onClick={() => setScreen("setup")}>
+              셋업 수정
+            </button>
+          </div>
+
+          <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+            <button className="btn primary" onClick={() => setScreen("friend")}>
+              친구와 대결하기(방 코드)
+            </button>
+            <button
+              className="btn primary ghost"
+              onClick={() => {
+                quickMatch();
+                // room state will move to lobby once matched
+              }}
+            >
+              모르는 친구와 대결하기(랜덤 매칭)
+            </button>
+            <button className="btn" onClick={() => toastMsg("혼자 연습하기는 다음 작업에서 붙입니다(준비중)")}
+            >
+              혼자 연습하기
+            </button>
+          </div>
+
+          {leaderboardRows && (
+            <div style={{ marginTop: 14 }}>
+              <div className="hint">리더보드(현재 셋업 기준)</div>
+              <ol className="mono" style={{ marginTop: 6 }}>
+                {leaderboardRows.slice(0, 10).map((r, idx) => (
+                  <li key={r.user.id}>
+                    #{idx + 1} {r.user.nickname} — {r.wins}W/{r.losses}L ({r.gamesPlayed})
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* STEP 4: Friend (room code) */}
+      {screen === "friend" && (
+        <section className="card">
+          <div className="row between">
+            <h2 className="sectionTitle">친구와 대결(방 코드)</h2>
+            <button className="btn" onClick={() => setScreen("menu")}>
+              메뉴로
+            </button>
+          </div>
+
+          <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+            <button className="btn primary" onClick={createRoom}>
+              방 만들기
+            </button>
+            <input
+              className="input"
+              placeholder="방 코드 입력"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            />
+            <button className="btn" onClick={joinRoomByCode}>
+              참가
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Game Screens (lobby/playing/result) */
+      }
+      {(screen === "lobby" || screen === "playing" || screen === "result") && room && (
+        <section className="card">
+          <div className="row between">
+            <div>
+              <div className="title">방 코드: {room.code}</div>
+              <div className="sub">
+                학년 {room.grade} · {room.subject} · {room.totalQuestions}문제 · 학기 {room.semester}
+              </div>
+            </div>
+            <button
+              className="btn"
+              onClick={() => {
+                setReady(false);
+                setRoom(null);
+                setPhase("home");
+                setScreen("menu");
+              }}
+            >
+              나가기
+            </button>
+          </div>
 
           <div className="row" style={{ marginTop: 10, flexWrap: "wrap" }}>
             <div className="pill">
