@@ -92,6 +92,8 @@ export default function App() {
   const [joinCode, setJoinCode] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [sfxOn, setSfxOn] = useState<boolean>(() => (localStorage.getItem("svg_sfx") ?? "1") === "1");
+  const [fx, setFx] = useState<null | { kind: "correct" | "wrong"; at: number }>(null);
+  const [confettiAt, setConfettiAt] = useState<number | null>(null);
 
   const toastMsg = (msg: string, ms = 2000) => {
     setToast(msg);
@@ -198,6 +200,14 @@ export default function App() {
       // Lightweight feedback (MVP)
       toastMsg(correct ? "정답!" : "오답!", 700);
       playSfx(correct ? "correct" : "wrong", sfxOn);
+
+      setFx({ kind: correct ? "correct" : "wrong", at: Date.now() });
+      // haptics (best-effort)
+      try {
+        if (navigator.vibrate) navigator.vibrate(correct ? 18 : [20, 30, 20]);
+      } catch {
+        // ignore
+      }
     });
 
     socket.on("badge:earned", (b: Badge) => {
@@ -227,6 +237,7 @@ export default function App() {
         playSfx("tap", sfxOn);
       } else {
         playSfx(meWon ? "win" : "lose", sfxOn);
+        if (meWon) setConfettiAt(Date.now());
       }
     });
 
@@ -466,6 +477,8 @@ export default function App() {
 
   return (
     <div className="container">
+      {confettiAt && <div className="confetti" key={confettiAt} />}
+
       {earnedBadges.length > 0 && (
         <div
           style={{
@@ -1190,7 +1203,10 @@ export default function App() {
                 </div>
               )}
 
-              <div style={{ marginTop: 10 }} className="qbox">
+              <div
+                style={{ marginTop: 10 }}
+                className={`qbox ${fx?.kind === "correct" ? "fx-correct" : ""} ${fx?.kind === "wrong" ? "fx-wrong" : ""}`}
+              >
                 <div className="qprompt">
                   Q{localIndex + 1}. {current?.prompt ?? "문제 불러오는 중..."}
                 </div>
