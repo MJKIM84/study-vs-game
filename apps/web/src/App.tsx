@@ -155,7 +155,7 @@ export default function App() {
       setTimeout(() => setToast(null), 2000);
     });
 
-    socket.on("game:finish", ({ winnerId }: { winnerId: string }) => {
+    socket.on("game:finish", ({ winnerId }: { winnerId: string | null }) => {
       setWinnerId(winnerId);
       setPhase("result");
       setReady(false);
@@ -696,7 +696,7 @@ export default function App() {
                   </button>
                 </div>
                 <div className="hint">
-                  MVP 규칙: 먼저 {room.totalQuestions}문제 풀면 승리(정답 수는 표시만). 다음 단계에서 “정답 우선/오답 패널티”로 조정합니다.
+                  MVP 규칙: 서버가 정답 검증 → 정답 수 우선, 동점이면 마지막 제출이 더 빠른 쪽 승(완전 동률 무승부)
                 </div>
               </div>
             </div>
@@ -705,7 +705,11 @@ export default function App() {
           {phase === "result" && (
             <div style={{ marginTop: 12 }}>
               <div className="result">
-                승자: <b>{room.players.find((p) => p.id === winnerId)?.name ?? "(알 수 없음)"}</b>
+                결과: {winnerId ? (
+                  <b>{room.players.find((p) => p.id === winnerId)?.name ?? "(알 수 없음)"} 승</b>
+                ) : (
+                  <b>무승부</b>
+                )}
               </div>
 
               {meUser && meStats?.ok && (
