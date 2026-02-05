@@ -36,15 +36,32 @@ type BankMeta = {
 
 type Question = { id: string; prompt: string };
 
+type User = { id: string; username: string; nickname: string };
+
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:5174";
 
 export default function App() {
-  const socket: Socket = useMemo(() => io(SERVER_URL, { transports: ["websocket"] }), []);
+  const [token, setToken] = useState<string>(() => localStorage.getItem("svg_token") ?? "");
+  const socket: Socket = useMemo(
+    () =>
+      io(SERVER_URL, {
+        transports: ["websocket"],
+        auth: token ? { token } : undefined,
+      }),
+    [token],
+  );
 
   const [phase, setPhase] = useState<"home" | "lobby" | "playing" | "result">("home");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+
+  // auth UI state
+  const [meUser, setMeUser] = useState<User | null>(null);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [nickname, setNickname] = useState("");
 
   // setup choices
   const [grade, setGrade] = useState<Grade>(1);
@@ -69,6 +86,14 @@ export default function App() {
   const timeoutSentRef = useRef(false);
 
   useEffect(() => {
+    // refresh /me when socket (token) changes
+    fetch(`${SERVER_URL}/auth/me`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then((r) => r.json())
+      .then((j) => setMeUser(j.user ?? null))
+      .catch(() => setMeUser(null));
+
     socket.on("room:state", (state: RoomState) => {
       setRoom(state);
       setPhase(state.started ? "playing" : "lobby");
@@ -122,7 +147,7 @@ export default function App() {
       socket.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [socket]);
+  }, [socket, token]);
 
   // Fetch bank meta for exclude-by-checkbox UI
   useEffect(() => {
@@ -227,6 +252,44 @@ export default function App() {
     setAnswer("");
   }
 
+  async function submitAuth() {
+    try {
+      const endpoint = authMode === "signup" ? "/auth/signup" : "/auth/login";
+      const body: any = { username, password };
+      if (authMode === "signup") body.nickname = nickname || username;
+
+      const r = await fetch(`${SERVER_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!r.ok || !j.ok) {
+        setToast(`인증 실패: ${j.error ?? r.status}`);
+        setTimeout(() => setToast(null), 2500);
+        return;
+      }
+
+      localStorage.setItem("svg_token", j.token);
+      setToken(j.token);
+      setMeUser(j.user);
+      setPassword("");
+      setToast("로그인 완료");
+      setTimeout(() => setToast(null), 1500);
+    } catch {
+      setToast("인증 실패");
+      setTimeout(() => setToast(null), 2500);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("svg_token");
+    setToken("");
+    setMeUser(null);
+    setToast("로그아웃");
+    setTimeout(() => setToast(null), 1500);
+  }
+
   return (
     <div className="container">
       <header className="header">
@@ -236,6 +299,61 @@ export default function App() {
         </div>
         <div className="pill">server: {SERVER_URL}</div>
       </header>
+
+      <section className="card" style={{ marginBottom: 12 }}>
+        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <strong>계정</strong>: {meUser ? `${meUser.nickname} (@${meUser.username})` : "익명"}
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            {meUser ? (
+              <button className="btn" onClick={logout}>
+                로그아웃
+              </button>
+            ) : (
+              <>
+                <button className="btn" onClick={() => setAuthMode("login")}>
+                  로그인
+                </button>
+                <button className="btn" onClick={() => setAuthMode("signup")}>
+                  회원가입
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {!meUser && (
+          <div style={{ marginTop: 10 }}>
+            <div className="row" style={{ flexWrap: "wrap" }}>
+              <input
+                className="input"
+                placeholder="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <input
+                className="input"
+                placeholder="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {authMode === "signup" && (
+                <input
+                  className="input"
+                  placeholder="nickname"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                />
+              )}
+              <button className="btn primary" onClick={submitAuth}>
+                {authMode === "signup" ? "가입" : "로그인"}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       {toast && <div className="toast">{toast}</div>}
 

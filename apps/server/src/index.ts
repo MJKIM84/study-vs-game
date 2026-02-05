@@ -5,13 +5,34 @@ import { Server } from "socket.io";
 import { customAlphabet } from "nanoid";
 import { loadQuestionBank } from "./bankLoad.js";
 import { type Semester } from "./bankSchema.js";
+import { getMe, postLogin, postSignup, requireAuth, getReqUser } from "./httpAuthRoutes.js";
+import { leaderboard, recordMatchAndUpdateRatings, modeKey } from "./ratings.js";
+import { verifyToken } from "./auth.js";
 
 const PORT = Number(process.env.PORT ?? 5174);
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
 
 const app = express();
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+app.use(express.json());
 app.get("/health", (_req, res) => res.json({ ok: true }));
+
+// Auth (JWT bearer)
+app.post("/auth/signup", postSignup);
+app.post("/auth/login", postLogin);
+app.get("/auth/me", getMe);
+
+// Leaderboard
+app.get("/leaderboard", async (req, res) => {
+  const grade = Number(req.query.grade ?? 1);
+  const subject = String(req.query.subject ?? "math");
+  const semester = String(req.query.semester ?? "all");
+  const totalQuestions = Number(req.query.totalQuestions ?? 10);
+
+  const mk = modeKey({ grade, subject, semester, totalQuestions });
+  const rows = await leaderboard({ modeKey: mk, limit: 50 });
+  res.json({ ok: true, modeKey: mk, rows });
+});
 
 // Bank metadata for UI (unit codes, counts)
 app.get("/bank/meta", (req, res) => {
@@ -69,6 +90,9 @@ type Player = {
   id: string;
   name: string;
   socketId: string;
+  userId?: string;
+  username?: string;
+  nickname?: string;
   ready: boolean;
   correct: number;
   index: number; // current question index
@@ -209,9 +233,14 @@ function roomState(room: Room) {
   };
 }
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const playerId = socket.id;
-  const name = randomAnonName();
+  const anonName = randomAnonName();
+
+  // Optional auth: client may send JWT in handshake auth
+  const token = (socket.handshake.auth as any)?.token as string | undefined;
+  const authed = token ? await verifyToken(token) : null;
+  const name = authed?.nickname ?? anonName;
 
   // Make sure this socket isn't lingering in a queue (defensive)
   queueRemove(socket.id);
@@ -247,6 +276,9 @@ io.on("connection", (socket) => {
         id: playerId,
         name,
         socketId: socket.id,
+        userId: authed?.id,
+        username: authed?.username,
+        nickname: authed?.nickname,
         ready: false,
         correct: 0,
         index: 0,
@@ -275,6 +307,9 @@ io.on("connection", (socket) => {
       id: playerId,
       name,
       socketId: socket.id,
+      userId: authed?.id,
+      username: authed?.username,
+      nickname: authed?.nickname,
       ready: false,
       correct: 0,
       index: 0,
@@ -286,7 +321,8 @@ io.on("connection", (socket) => {
   // Matchmaking (quick play)
   socket.on(
     "queue:join",
-    ({ totalQuestions, grade, subject }: { totalQuestions?: number; grade?: Grade; subject?: Subject } = {},
+    async (
+      { totalQuestions, grade, subject }: { totalQuestions?: number; grade?: Grade; subject?: Subject } = {},
     ) => {
       queueRemove(socket.id);
 
@@ -327,18 +363,29 @@ io.on("connection", (socket) => {
         const aName = randomAnonName();
         const bName = randomAnonName();
 
+        const aToken = (aSock.handshake.auth as any)?.token as string | undefined;
+        const bToken = (bSock.handshake.auth as any)?.token as string | undefined;
+        const aAuthed = aToken ? await verifyToken(aToken) : null;
+        const bAuthed = bToken ? await verifyToken(bToken) : null;
+
         room.players[aId] = {
           id: aId,
-          name: aName,
+          name: aAuthed?.nickname ?? aName,
           socketId: aId,
+          userId: aAuthed?.id,
+          username: aAuthed?.username,
+          nickname: aAuthed?.nickname,
           ready: false,
           correct: 0,
           index: 0,
         };
         room.players[bId] = {
           id: bId,
-          name: bName,
+          name: bAuthed?.nickname ?? bName,
           socketId: bId,
+          userId: bAuthed?.id,
+          username: bAuthed?.username,
+          nickname: bAuthed?.nickname,
           ready: false,
           correct: 0,
           index: 0,
@@ -395,7 +442,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  function finishGame(room: Room, reason: "completed" | "timeout") {
+  async function finishGame(room: Room, reason: "completed" | "timeout") {
     const players = Object.values(room.players);
     if (players.length < 2) return;
 
@@ -420,6 +467,43 @@ io.on("connection", (socket) => {
         [b.id]: { correct: b.correct, finishedAt: b.finishedAt ?? null, lastSubmitAt: b.lastSubmitAt ?? null },
       },
     });
+
+    // Persist match + ratings (only for authenticated users)
+    const winnerUserId = winnerId ? room.players[winnerId]?.userId ?? null : null;
+    try {
+      await recordMatchAndUpdateRatings({
+        createdByUserId: a.userId ?? b.userId ?? null,
+        grade: room.grade,
+        subject: room.subject,
+        semester: String(room.semester),
+        totalQuestions: room.totalQuestions,
+        seed: room.seed ?? null,
+        reason,
+        winnerUserId,
+        players: [
+          {
+            socketId: a.socketId,
+            userId: a.userId ?? null,
+            username: a.username ?? null,
+            nickname: a.nickname ?? null,
+            correct: a.correct,
+            lastSubmitAt: a.lastSubmitAt ?? null,
+            finishedAt: a.finishedAt ?? null,
+          },
+          {
+            socketId: b.socketId,
+            userId: b.userId ?? null,
+            username: b.username ?? null,
+            nickname: b.nickname ?? null,
+            correct: b.correct,
+            lastSubmitAt: b.lastSubmitAt ?? null,
+            finishedAt: b.finishedAt ?? null,
+          },
+        ],
+      });
+    } catch (e) {
+      console.warn("[db] failed to record match", e);
+    }
 
     room.started = false;
     room.startAt = undefined;
@@ -463,14 +547,14 @@ io.on("connection", (socket) => {
 
       const players = Object.values(room.players);
       const allDone = players.length === 2 && players.every((pl) => pl.index >= room.totalQuestions);
-      if (allDone) finishGame(room, "completed");
+      if (allDone) void finishGame(room, "completed");
     },
   );
 
   socket.on("game:timeout", ({ code }: { code: string }) => {
     const room = rooms.get(code);
     if (!room || !room.started) return;
-    finishGame(room, "timeout");
+    void finishGame(room, "timeout");
   });
 
   socket.on("disconnect", () => {
