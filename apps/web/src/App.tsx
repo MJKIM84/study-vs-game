@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { playSfx } from "./sfx";
+import { avatarDataUri } from "./robloxish";
 import "./App.css";
 
 type Grade = 1 | 2 | 3 | 4 | 5 | 6;
@@ -80,10 +82,18 @@ export default function App() {
   const [room, setRoom] = useState<RoomState | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [sfxOn, setSfxOn] = useState<boolean>(() => (localStorage.getItem("svg_sfx") ?? "1") === "1");
 
   const toastMsg = (msg: string, ms = 2000) => {
     setToast(msg);
     setTimeout(() => setToast(null), ms);
+  };
+
+  const toggleSfx = () => {
+    const next = !sfxOn;
+    setSfxOn(next);
+    localStorage.setItem("svg_sfx", next ? "1" : "0");
+    playSfx("tap", next);
   };
 
   // auth UI state
@@ -141,9 +151,17 @@ export default function App() {
     });
 
     socket.on("game:countdown", ({ startAt }: { startAt: number }) => {
+      let lastBeep = -1;
       const tick = () => {
         const ms = startAt - Date.now();
         setCountdownMs(ms);
+
+        const sec = Math.ceil(ms / 1000);
+        if (sec !== lastBeep && sec > 0 && sec <= 3) {
+          lastBeep = sec;
+          playSfx("count", sfxOn);
+        }
+
         if (ms <= 0) {
           setCountdownMs(null);
         } else {
@@ -166,7 +184,8 @@ export default function App() {
 
     socket.on("game:answer", ({ correct }: { qi: number; correct: boolean }) => {
       // Lightweight feedback (MVP)
-      toastMsg(correct ? "정답" : "오답", 700);
+      toastMsg(correct ? "정답!" : "오답!", 700);
+      playSfx(correct ? "correct" : "wrong", sfxOn);
     });
 
     socket.on("queue:matched", ({ code }: { code: string }) => {
@@ -183,6 +202,14 @@ export default function App() {
       setTimeLeftMs(null);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
+
+      // sfx
+      const meWon = winnerId && winnerId === socket.id;
+      if (winnerId === null) {
+        playSfx("tap", sfxOn);
+      } else {
+        playSfx(meWon ? "win" : "lose", sfxOn);
+      }
     });
 
     socket.on("error:toast", ({ message }: { message: string }) => {
@@ -194,7 +221,7 @@ export default function App() {
       socket.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [socket, token]);
+  }, [socket, token, sfxOn]);
 
   // Fetch bank meta for exclude-by-checkbox UI
   useEffect(() => {
@@ -393,10 +420,15 @@ export default function App() {
     <div className="container">
       <header className="header">
         <div>
-          <div className="title">Study VS Game (MVP)</div>
-          <div className="sub">1~3학년 · 수학/영어 · 익명 VS</div>
+          <div className="title">Study VS Game</div>
+          <div className="sub">키즈 대결 게임 · 빠르게 풀고 이겨라!</div>
         </div>
-        <div className="pill">server: {SERVER_URL}</div>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <button className="btn" onClick={toggleSfx}>
+            효과음: {sfxOn ? "ON" : "OFF"}
+          </button>
+          <div className="pill">server: {SERVER_URL}</div>
+        </div>
       </header>
 
       {toast && <div className="toast">{toast}</div>}
@@ -884,11 +916,20 @@ export default function App() {
           <div className="players">
             {room.players.map((p) => (
               <div key={p.id} className={`player ${p.id === meId ? "me" : ""}`}>
-                <div className="row between">
-                  <div>
-                    <div className="pname">{p.name}</div>
-                    <div className="psub">
-                      진행: {p.index}/{room.totalQuestions} · 정답: {p.correct}
+                <div className="row between" style={{ gap: 12 }}>
+                  <div className="row" style={{ gap: 10 }}>
+                    <img
+                      src={avatarDataUri(p.id)}
+                      width={44}
+                      height={44}
+                      style={{ borderRadius: 14, border: "1px solid rgba(148,163,184,0.22)" }}
+                      alt="avatar"
+                    />
+                    <div>
+                      <div className="pname">{p.name}</div>
+                      <div className="psub">
+                        진행: {p.index}/{room.totalQuestions} · 정답: {p.correct}
+                      </div>
                     </div>
                   </div>
                   <div className={`badge ${p.ready ? "ok" : ""}`}>{p.ready ? "READY" : "WAIT"}</div>
